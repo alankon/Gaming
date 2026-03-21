@@ -4,13 +4,14 @@
   const BASE_SIZE = 860;
   const GRID_SIZE = 4;
   const BOARD_X = 54;
-  const BOARD_Y = 250;
-  const BOARD_SIZE = 752;
+  const BOARD_Y = 248;
+  const BOARD_SIZE = 558;
   const GAP = 14;
   const CELL = (BOARD_SIZE - GAP * (GRID_SIZE + 1)) / GRID_SIZE;
   const STORAGE_KEY = "alankon_gaming_grid_best";
   const RESTART_BUTTON = { x: 54, y: 182, w: 154, h: 52 };
   const ANIMATION_DURATION = 0.18;
+  const SWIPE_THRESHOLD = 36;
   const TILE_THEME = {
     2: { label: "clone", color: "#fff4dc", ink: "#4e3f34" },
     4: { label: "commit", color: "#ffe0b8", ink: "#5a3e22" },
@@ -36,7 +37,9 @@
     hoverRestart: false,
     justSpawned: [],
     justMerged: [],
-    animation: null
+    animation: null,
+    pointer: null,
+    suppressClick: false
   };
 
   function loadBest() {
@@ -486,30 +489,30 @@
   }
 
   function drawMenuOverlay() {
-    drawRoundedRect(108, 310, 644, 246, 28, "rgba(9, 14, 29, 0.84)");
+    drawRoundedRect(114, 286, 632, 206, 28, "rgba(9, 14, 29, 0.84)");
     ctx.textAlign = "center";
     ctx.fillStyle = "#f8fafc";
-    ctx.font = '900 50px "Trebuchet MS"';
-    ctx.fillText("Seu grid. Sua marca.", BASE_SIZE / 2, 376);
+    ctx.font = '900 46px "Trebuchet MS"';
+    ctx.fillText("Seu grid. Sua marca.", BASE_SIZE / 2, 350);
     ctx.fillStyle = "#bae6fd";
-    ctx.font = '700 24px "Trebuchet MS"';
-    ctx.fillText("Setas ou WASD movem. R reinicia. F alterna fullscreen.", BASE_SIZE / 2, 426);
-    ctx.fillText("Clique no tabuleiro para abrir a primeira run.", BASE_SIZE / 2, 466);
+    ctx.font = '700 22px "Trebuchet MS"';
+    ctx.fillText("Arraste, use setas ou WASD. R reinicia. F alterna fullscreen.", BASE_SIZE / 2, 394);
+    ctx.fillText("Clique ou arraste no tabuleiro para abrir a primeira run.", BASE_SIZE / 2, 432);
     ctx.fillStyle = "#facc15";
-    ctx.font = '900 28px "Trebuchet MS"';
-    ctx.fillText("Meta: chegar ao tile ALANKON GAMING 2048", BASE_SIZE / 2, 516);
+    ctx.font = '900 26px "Trebuchet MS"';
+    ctx.fillText("Meta: chegar ao tile ALANKON GAMING 2048", BASE_SIZE / 2, 470);
   }
 
   function drawEndRibbon() {
     if (state.mode !== "won" && state.mode !== "lost") return;
     const won = state.mode === "won";
-    drawRoundedRect(132, 676, 596, 96, 22, won ? "rgba(16, 185, 129, 0.9)" : "rgba(239, 68, 68, 0.9)");
+    drawRoundedRect(132, 700, 596, 88, 22, won ? "rgba(16, 185, 129, 0.9)" : "rgba(239, 68, 68, 0.9)");
     ctx.textAlign = "center";
     ctx.fillStyle = "#f8fafc";
-    ctx.font = '900 36px "Trebuchet MS"';
-    ctx.fillText(won ? "Marca propria desbloqueada" : "Fim da run", BASE_SIZE / 2, 714);
-    ctx.font = '700 22px "Trebuchet MS"';
-    ctx.fillText("Use Nova run ou aperte R para jogar de novo.", BASE_SIZE / 2, 746);
+    ctx.font = '900 34px "Trebuchet MS"';
+    ctx.fillText(won ? "Marca propria desbloqueada" : "Fim da run", BASE_SIZE / 2, 736);
+    ctx.font = '700 21px "Trebuchet MS"';
+    ctx.fillText("Use Nova run ou aperte R para jogar de novo.", BASE_SIZE / 2, 766);
   }
 
   function render() {
@@ -542,6 +545,9 @@
 
   function handlePointerMove(event) {
     const point = toCanvasPoint(event);
+    if (state.pointer) {
+      state.pointer.last = point;
+    }
     const hovering = isInsideRect(point.x, point.y, RESTART_BUTTON);
     if (hovering !== state.hoverRestart) {
       state.hoverRestart = hovering;
@@ -549,7 +555,60 @@
     }
   }
 
+  function applySwipe(from, to) {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    if (Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD) {
+      return false;
+    }
+
+    const direction =
+      Math.abs(dx) > Math.abs(dy)
+        ? (dx > 0 ? "right" : "left")
+        : (dy > 0 ? "down" : "up");
+
+    if (state.mode === "menu") {
+      startGame();
+    }
+    if (state.mode === "won" || state.mode === "lost") {
+      restartGame();
+    }
+    applyMove(direction);
+    render();
+    return true;
+  }
+
+  function handlePointerDown(event) {
+    const point = toCanvasPoint(event);
+    state.pointer = {
+      start: point,
+      last: point,
+      moved: false
+    };
+  }
+
+  function handlePointerUp(event) {
+    const point = toCanvasPoint(event);
+    if (!state.pointer) {
+      return;
+    }
+
+    const pointer = state.pointer;
+    state.pointer = null;
+    const swiped = applySwipe(pointer.start, point);
+    state.suppressClick = true;
+    window.setTimeout(() => {
+      state.suppressClick = false;
+    }, 0);
+    if (!swiped) {
+      handlePointerClick(event);
+    }
+  }
+
   function handlePointerClick(event) {
+    if (state.suppressClick) {
+      return;
+    }
     const point = toCanvasPoint(event);
     if (isInsideRect(point.x, point.y, RESTART_BUTTON)) {
       restartGame();
@@ -658,7 +717,12 @@
     if (map[key]) handleMoveKey(map[key]);
   });
 
-  canvas.addEventListener("mousemove", handlePointerMove);
+  canvas.addEventListener("pointerdown", handlePointerDown);
+  canvas.addEventListener("pointermove", handlePointerMove);
+  canvas.addEventListener("pointerup", handlePointerUp);
+  canvas.addEventListener("pointercancel", () => {
+    state.pointer = null;
+  });
   canvas.addEventListener("click", handlePointerClick);
   window.addEventListener("resize", resizeCanvas);
   document.addEventListener("fullscreenchange", resizeCanvas);

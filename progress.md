@@ -15,3 +15,6 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Confirmado nesta rodada: tabuleiro inteiro cabe na tela, `up` e `down` respondem no sentido correto, e os tiles agora se deslocam visualmente ate a posicao de merge antes do estado final aparecer.
 - Polimento adicional concluido: easing mais suave, rastro curto durante o deslocamento e impacto visual melhor nos merges.
 - Validado em `output/polish-play`: o estado textual mostra a animacao em progresso e a captura confirma o deslocamento antes da consolidacao final.
+- Ajuste extra concluido: geometria do tabuleiro corrigida para caber dentro do canvas, sem corte da parte inferior.
+- Entrada atualizada: swipe/drag por pointer events adicionado para mouse e touch, mantendo clique para iniciar e teclado como fallback.
+- Validado em `output/layout-fix` e `output/input-fix`: menu visivel sem corte e estado jogavel apos a interacao.
