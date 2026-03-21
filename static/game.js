@@ -1,15 +1,16 @@
 (function () {
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
-  const BASE_SIZE = 920;
+  const BASE_SIZE = 860;
   const GRID_SIZE = 4;
-  const BOARD_X = 64;
-  const BOARD_Y = 248;
-  const BOARD_SIZE = 792;
-  const GAP = 16;
+  const BOARD_X = 54;
+  const BOARD_Y = 250;
+  const BOARD_SIZE = 752;
+  const GAP = 14;
   const CELL = (BOARD_SIZE - GAP * (GRID_SIZE + 1)) / GRID_SIZE;
   const STORAGE_KEY = "alankon_gaming_grid_best";
-  const RESTART_BUTTON = { x: 64, y: 182, w: 166, h: 56 };
+  const RESTART_BUTTON = { x: 54, y: 182, w: 154, h: 52 };
+  const ANIMATION_DURATION = 0.18;
   const TILE_THEME = {
     2: { label: "clone", color: "#fff4dc", ink: "#4e3f34" },
     4: { label: "commit", color: "#ffe0b8", ink: "#5a3e22" },
@@ -32,10 +33,10 @@
     best: loadBest(),
     lastMove: "none",
     message: "Clique no grid para iniciar sua run",
-    flash: 0,
     hoverRestart: false,
     justSpawned: [],
-    justMerged: []
+    justMerged: [],
+    animation: null
   };
 
   function loadBest() {
@@ -61,23 +62,38 @@
     return board.map((row) => row.slice());
   }
 
-  function getEmptyCells() {
+  function keyFor(row, col) {
+    return `${row},${col}`;
+  }
+
+  function getTileAt(row, col) {
+    return state.board[row][col];
+  }
+
+  function getCellPosition(row, col) {
+    return {
+      x: BOARD_X + GAP + col * (CELL + GAP),
+      y: BOARD_Y + GAP + row * (CELL + GAP)
+    };
+  }
+
+  function getEmptyCells(board) {
     const cells = [];
     for (let row = 0; row < GRID_SIZE; row++) {
       for (let col = 0; col < GRID_SIZE; col++) {
-        if (state.board[row][col] === 0) cells.push({ row, col });
+        if (board[row][col] === 0) cells.push({ row, col });
       }
     }
     return cells;
   }
 
-  function addRandomTile() {
-    const cells = getEmptyCells();
-    if (!cells.length) return false;
+  function addRandomTile(board) {
+    const cells = getEmptyCells(board);
+    if (!cells.length) return null;
     const cell = cells[Math.floor(Math.random() * cells.length)];
-    state.board[cell.row][cell.col] = Math.random() < 0.9 ? 2 : 4;
-    state.justSpawned.push({ row: cell.row, col: cell.col, life: 0.9 });
-    return true;
+    const value = Math.random() < 0.9 ? 2 : 4;
+    board[cell.row][cell.col] = value;
+    return { row: cell.row, col: cell.col, value };
   }
 
   function startGame() {
@@ -86,82 +102,16 @@
     state.lastMove = "spawn";
     state.mode = "playing";
     state.message = "Una seus blocos Git ate chegar ao tile ALANKON GAMING";
-    state.flash = 0.7;
     state.justSpawned = [];
     state.justMerged = [];
-    addRandomTile();
-    addRandomTile();
+    state.animation = null;
+    const first = addRandomTile(state.board);
+    const second = addRandomTile(state.board);
+    state.justSpawned = [first, second].filter(Boolean).map((tile) => ({ ...tile, life: 0.7 }));
   }
 
   function restartGame() {
     startGame();
-  }
-
-  function slideRowLeft(rowIndex, row) {
-    const compact = row.filter((value) => value !== 0);
-    const merged = [];
-    let gained = 0;
-
-    for (let i = 0; i < compact.length; i++) {
-      const current = compact[i];
-      const next = compact[i + 1];
-      if (next && current === next) {
-        const value = current * 2;
-        merged.push(value);
-        gained += value;
-        state.justMerged.push({ row: rowIndex, col: merged.length - 1, life: 1 });
-        i++;
-      } else {
-        merged.push(current);
-      }
-    }
-
-    while (merged.length < GRID_SIZE) merged.push(0);
-    return { row: merged, gained };
-  }
-
-  function rotateBoard(board) {
-    const next = createEmptyBoard();
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        next[row][col] = board[col][GRID_SIZE - row - 1];
-      }
-    }
-    return next;
-  }
-
-  function rotateTimes(board, count) {
-    let next = cloneBoard(board);
-    for (let i = 0; i < count; i++) next = rotateBoard(next);
-    return next;
-  }
-
-  function rotatePosition(pos, count) {
-    let row = pos.row;
-    let col = pos.col;
-    for (let i = 0; i < count; i++) {
-      const nextRow = col;
-      const nextCol = GRID_SIZE - row - 1;
-      row = nextRow;
-      col = nextCol;
-    }
-    return { ...pos, row, col };
-  }
-
-  function boardsMatch(a, b) {
-    return a.every((row, rowIndex) => row.every((cell, colIndex) => cell === b[rowIndex][colIndex]));
-  }
-
-  function canMove() {
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        const value = state.board[row][col];
-        if (value === 0) return true;
-        if (row + 1 < GRID_SIZE && state.board[row + 1][col] === value) return true;
-        if (col + 1 < GRID_SIZE && state.board[row][col + 1] === value) return true;
-      }
-    }
-    return false;
   }
 
   function updateBest() {
@@ -171,35 +121,148 @@
     }
   }
 
-  function applyMove(direction) {
-    if (state.mode !== "playing") return;
-    const rotations = { left: 0, up: 3, right: 2, down: 1 };
-    state.justMerged = [];
-    const rotated = rotateTimes(state.board, rotations[direction]);
-    const shifted = createEmptyBoard();
-    let gained = 0;
+  function getLineCoords(direction, index) {
+    const coords = [];
+    if (direction === "left") {
+      for (let col = 0; col < GRID_SIZE; col++) coords.push({ row: index, col });
+    } else if (direction === "right") {
+      for (let col = GRID_SIZE - 1; col >= 0; col--) coords.push({ row: index, col });
+    } else if (direction === "up") {
+      for (let row = 0; row < GRID_SIZE; row++) coords.push({ row, col: index });
+    } else if (direction === "down") {
+      for (let row = GRID_SIZE - 1; row >= 0; row--) coords.push({ row, col: index });
+    }
+    return coords;
+  }
 
-    for (let row = 0; row < GRID_SIZE; row++) {
-      const result = slideRowLeft(row, rotated[row]);
-      shifted[row] = result.row;
-      gained += result.gained;
+  function computeMove(board, direction) {
+    const nextBoard = createEmptyBoard();
+    const moves = [];
+    const merged = [];
+    let gained = 0;
+    let moved = false;
+
+    for (let lineIndex = 0; lineIndex < GRID_SIZE; lineIndex++) {
+      const coords = getLineCoords(direction, lineIndex);
+      const tiles = coords
+        .map((coord) => ({ ...coord, value: board[coord.row][coord.col] }))
+        .filter((tile) => tile.value !== 0);
+
+      let targetIndex = 0;
+      let i = 0;
+      while (i < tiles.length) {
+        const current = tiles[i];
+        const next = tiles[i + 1];
+        const destination = coords[targetIndex];
+
+        if (next && current.value === next.value) {
+          const mergedValue = current.value * 2;
+          nextBoard[destination.row][destination.col] = mergedValue;
+          moves.push({
+            fromRow: current.row,
+            fromCol: current.col,
+            toRow: destination.row,
+            toCol: destination.col,
+            value: current.value
+          });
+          moves.push({
+            fromRow: next.row,
+            fromCol: next.col,
+            toRow: destination.row,
+            toCol: destination.col,
+            value: next.value
+          });
+          merged.push({ row: destination.row, col: destination.col, life: 1 });
+          gained += mergedValue;
+          if (
+            current.row !== destination.row ||
+            current.col !== destination.col ||
+            next.row !== destination.row ||
+            next.col !== destination.col
+          ) {
+            moved = true;
+          }
+          i += 2;
+        } else {
+          nextBoard[destination.row][destination.col] = current.value;
+          moves.push({
+            fromRow: current.row,
+            fromCol: current.col,
+            toRow: destination.row,
+            toCol: destination.col,
+            value: current.value
+          });
+          if (current.row !== destination.row || current.col !== destination.col) {
+            moved = true;
+          }
+          i += 1;
+        }
+        targetIndex += 1;
+      }
     }
 
-    const restored = rotateTimes(shifted, (4 - rotations[direction]) % 4);
-    if (boardsMatch(state.board, restored)) {
+    if (!moved) {
+      const same = board.every((row, rowIndex) =>
+        row.every((value, colIndex) => value === nextBoard[rowIndex][colIndex])
+      );
+      if (!same) moved = true;
+    }
+
+    return { board: nextBoard, moves, merged, gained, moved };
+  }
+
+  function canMove(board) {
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        const value = board[row][col];
+        if (value === 0) return true;
+        if (row + 1 < GRID_SIZE && board[row + 1][col] === value) return true;
+        if (col + 1 < GRID_SIZE && board[row][col + 1] === value) return true;
+      }
+    }
+    return false;
+  }
+
+  function applyMove(direction) {
+    if (state.mode !== "playing" || state.animation) return;
+
+    const result = computeMove(state.board, direction);
+    if (!result.moved) {
       state.message = "Esse movimento nao alterou seu grid";
       state.lastMove = direction;
       return;
     }
 
-    state.justMerged = state.justMerged.map((item) => rotatePosition(item, (4 - rotations[direction]) % 4));
-    state.board = restored;
-    state.score += gained;
+    const finalBoard = cloneBoard(result.board);
+    const spawned = addRandomTile(finalBoard);
+
+    state.board = finalBoard;
+    state.score += result.gained;
     updateBest();
     state.lastMove = direction;
-    state.flash = 0.65;
+    state.message = `Movimento ${direction} confirmado`;
     state.justSpawned = [];
-    addRandomTile();
+    state.justMerged = [];
+    state.animation = {
+      elapsed: 0,
+      duration: ANIMATION_DURATION,
+      moves: result.moves,
+      hidden: new Set([
+        ...result.moves.map((move) => keyFor(move.toRow, move.toCol)),
+        ...(spawned ? [keyFor(spawned.row, spawned.col)] : [])
+      ]),
+      spawned,
+      merged: result.merged
+    };
+  }
+
+  function finalizeAnimation() {
+    if (!state.animation) return;
+    if (state.animation.spawned) {
+      state.justSpawned = [{ ...state.animation.spawned, life: 0.7 }];
+    }
+    state.justMerged = state.animation.merged.map((tile) => ({ ...tile, life: tile.life }));
+    state.animation = null;
 
     const maxTile = Math.max(...state.board.flat());
     if (maxTile >= 2048) {
@@ -208,23 +271,26 @@
       return;
     }
 
-    if (!canMove()) {
+    if (!canMove(state.board)) {
       state.mode = "lost";
       state.message = "Run encerrada. Bata seu best e tente outra vez.";
-      return;
     }
-
-    state.message = `Movimento ${direction} confirmado`;
   }
 
   function update(dt) {
-    state.flash = Math.max(0, state.flash - dt * 1.6);
     state.justSpawned = state.justSpawned
       .map((item) => ({ ...item, life: item.life - dt * 2 }))
       .filter((item) => item.life > 0);
     state.justMerged = state.justMerged
       .map((item) => ({ ...item, life: item.life - dt * 2.4 }))
       .filter((item) => item.life > 0);
+
+    if (state.animation) {
+      state.animation.elapsed += dt;
+      if (state.animation.elapsed >= state.animation.duration) {
+        finalizeAnimation();
+      }
+    }
   }
 
   function drawRoundedRect(x, y, w, h, r, fill) {
@@ -243,9 +309,9 @@
     let size = baseSize;
     do {
       ctx.font = `${weight} ${size}px "Trebuchet MS"`;
-      if (ctx.measureText(text).width <= maxWidth || size <= 16) break;
+      if (ctx.measureText(text).width <= maxWidth || size <= 15) break;
       size -= 2;
-    } while (size > 16);
+    } while (size > 15);
     return size;
   }
 
@@ -253,8 +319,22 @@
     const spawned = state.justSpawned.find((item) => item.row === row && item.col === col);
     if (spawned) return 1 + spawned.life * 0.16;
     const merged = state.justMerged.find((item) => item.row === row && item.col === col);
-    if (merged) return 1 + merged.life * 0.24;
+    if (merged) return 1 + merged.life * 0.22;
     return 1;
+  }
+
+  function getTileTheme(value) {
+    return TILE_THEME[value] || TILE_THEME[4096];
+  }
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function easeOutBack(t) {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
   }
 
   function drawBackground() {
@@ -265,9 +345,9 @@
     drawRoundedRect(0, 0, BASE_SIZE, BASE_SIZE, 0, gradient);
 
     for (let i = 0; i < 18; i++) {
-      const x = 40 + ((i * 173) % 860);
-      const y = 40 + ((i * 127) % 820);
-      const radius = 22 + ((i * 7) % 34);
+      const x = 34 + ((i * 167) % 790);
+      const y = 36 + ((i * 121) % 780);
+      const radius = 18 + ((i * 7) % 28);
       ctx.fillStyle = `rgba(34, 211, 238, ${0.04 + (i % 3) * 0.02})`;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -275,113 +355,161 @@
     }
   }
 
-  function drawBoard() {
-    drawRoundedRect(BOARD_X, BOARD_Y, BOARD_SIZE, BOARD_SIZE, 30, "#1f2937");
-    drawRoundedRect(BOARD_X + 6, BOARD_Y + 6, BOARD_SIZE - 12, BOARD_SIZE - 12, 26, "#273449");
+  function drawTile(value, row, col, pulse) {
+    const tile = getTileTheme(value);
+    const { x, y } = getCellPosition(row, col);
+    const cx = x + CELL / 2;
+    const cy = y + CELL / 2;
 
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
-        const value = state.board[row][col];
-        const x = BOARD_X + GAP + col * (CELL + GAP);
-        const y = BOARD_Y + GAP + row * (CELL + GAP);
-        drawRoundedRect(x, y, CELL, CELL, 22, "#344155");
-        if (!value) continue;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(pulse, pulse);
+    ctx.translate(-cx, -cy);
+    drawRoundedRect(x, y, CELL, CELL, 20, tile.color);
 
-        const tile = TILE_THEME[value] || TILE_THEME[4096];
-        const pulse = getTilePulse(row, col);
-        const cx = x + CELL / 2;
-        const cy = y + CELL / 2;
+    ctx.fillStyle = tile.ink;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const numberSize = fitText(`${value}`, CELL - 24, value > 999 ? 36 : 48, 900);
+    ctx.font = `900 ${numberSize}px "Trebuchet MS"`;
+    ctx.fillText(`${value}`, cx, y + CELL / 2 - 8);
 
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.scale(pulse, pulse);
-        ctx.translate(-cx, -cy);
-        drawRoundedRect(x, y, CELL, CELL, 22, tile.color);
+    const labelSize = fitText(tile.label.toUpperCase(), CELL - 24, 20, 800);
+    ctx.font = `800 ${labelSize}px "Trebuchet MS"`;
+    ctx.fillText(tile.label.toUpperCase(), cx, y + CELL - 28);
+    ctx.restore();
+  }
 
-        ctx.fillStyle = tile.ink;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        const numberSize = fitText(`${value}`, CELL - 28, value > 999 ? 40 : 52, 900);
-        ctx.font = `900 ${numberSize}px "Trebuchet MS"`;
-        ctx.fillText(`${value}`, cx, y + CELL / 2 - 8);
+  function drawTrail(x, y, value, alpha) {
+    const tile = getTileTheme(value);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    drawRoundedRect(x, y, CELL, CELL, 20, tile.color);
+    ctx.restore();
+  }
 
-        const labelSize = fitText(tile.label.toUpperCase(), CELL - 28, 22, 800);
-        ctx.font = `800 ${labelSize}px "Trebuchet MS"`;
-        ctx.fillText(tile.label.toUpperCase(), cx, y + CELL - 30);
-        ctx.restore();
-      }
+  function drawMovingTiles() {
+    if (!state.animation) return;
+    const progress = Math.min(1, state.animation.elapsed / state.animation.duration);
+    const eased = easeOutCubic(progress);
+
+    for (const move of state.animation.moves) {
+      const from = getCellPosition(move.fromRow, move.fromCol);
+      const to = getCellPosition(move.toRow, move.toCol);
+      const trailX = from.x + (to.x - from.x) * Math.max(0, eased - 0.18);
+      const trailY = from.y + (to.y - from.y) * Math.max(0, eased - 0.18);
+      const x = from.x + (to.x - from.x) * eased;
+      const y = from.y + (to.y - from.y) * eased;
+      const tile = getTileTheme(move.value);
+      const cx = x + CELL / 2;
+
+      drawTrail(trailX, trailY, move.value, 0.16 * (1 - progress));
+      drawRoundedRect(x, y, CELL, CELL, 20, tile.color);
+      ctx.fillStyle = tile.ink;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const numberSize = fitText(`${move.value}`, CELL - 24, move.value > 999 ? 36 : 48, 900);
+      ctx.font = `900 ${numberSize}px "Trebuchet MS"`;
+      ctx.fillText(`${move.value}`, cx, y + CELL / 2 - 8);
+
+      const labelSize = fitText(tile.label.toUpperCase(), CELL - 24, 20, 800);
+      ctx.font = `800 ${labelSize}px "Trebuchet MS"`;
+      ctx.fillText(tile.label.toUpperCase(), cx, y + CELL - 28);
     }
   }
 
+  function drawBoard() {
+    drawRoundedRect(BOARD_X, BOARD_Y, BOARD_SIZE, BOARD_SIZE, 28, "#1f2937");
+    drawRoundedRect(BOARD_X + 6, BOARD_Y + 6, BOARD_SIZE - 12, BOARD_SIZE - 12, 24, "#273449");
+
+    const hidden = state.animation ? state.animation.hidden : new Set();
+    for (let row = 0; row < GRID_SIZE; row++) {
+      for (let col = 0; col < GRID_SIZE; col++) {
+        const { x, y } = getCellPosition(row, col);
+        drawRoundedRect(x, y, CELL, CELL, 20, "#344155");
+        const value = getTileAt(row, col);
+        if (!value || hidden.has(keyFor(row, col))) continue;
+        let pulse = getTilePulse(row, col);
+        const merged = state.justMerged.find((item) => item.row === row && item.col === col);
+        if (merged) {
+          pulse *= 0.98 + easeOutBack(1 - Math.max(0, merged.life)) * 0.08;
+        }
+        drawTile(value, row, col, pulse);
+      }
+    }
+
+    drawMovingTiles();
+  }
+
   function drawHudCard(x, y, w, h, title, value, fill) {
-    drawRoundedRect(x, y, w, h, 20, fill);
+    drawRoundedRect(x, y, w, h, 18, fill);
     ctx.textAlign = "center";
     ctx.fillStyle = "#f8fafc";
-    ctx.font = '700 18px "Trebuchet MS"';
-    ctx.fillText(title, x + w / 2, y + 26);
-    ctx.font = '900 34px "Trebuchet MS"';
-    ctx.fillText(`${value}`, x + w / 2, y + 60);
+    ctx.font = '700 16px "Trebuchet MS"';
+    ctx.fillText(title, x + w / 2, y + 24);
+    ctx.font = '900 30px "Trebuchet MS"';
+    ctx.fillText(`${value}`, x + w / 2, y + 56);
   }
 
   function drawRestartButton() {
     const fill = state.hoverRestart ? "#38bdf8" : "#263244";
-    drawRoundedRect(RESTART_BUTTON.x, RESTART_BUTTON.y, RESTART_BUTTON.w, RESTART_BUTTON.h, 18, fill);
+    drawRoundedRect(RESTART_BUTTON.x, RESTART_BUTTON.y, RESTART_BUTTON.w, RESTART_BUTTON.h, 16, fill);
     ctx.textAlign = "center";
     ctx.fillStyle = "#eff6ff";
-    ctx.font = '800 22px "Trebuchet MS"';
-    ctx.fillText("Nova run", RESTART_BUTTON.x + RESTART_BUTTON.w / 2, RESTART_BUTTON.y + 35);
+    ctx.font = '800 20px "Trebuchet MS"';
+    ctx.fillText("Nova run", RESTART_BUTTON.x + RESTART_BUTTON.w / 2, RESTART_BUTTON.y + 34);
   }
 
   function drawHud() {
     ctx.textAlign = "left";
     ctx.fillStyle = "#e5eefb";
-    ctx.font = '900 68px "Trebuchet MS"';
-    ctx.fillText("alankon Gaming", 64, 92);
+    ctx.font = '900 62px "Trebuchet MS"';
+    ctx.fillText("alankon Gaming", 54, 84);
 
     ctx.fillStyle = "#7dd3fc";
-    ctx.font = '700 28px "Trebuchet MS"';
-    ctx.fillText("Git Grid 2048", 66, 132);
+    ctx.font = '700 25px "Trebuchet MS"';
+    ctx.fillText("Git Grid 2048", 56, 120);
 
     ctx.fillStyle = "#bfdbfe";
-    ctx.font = '600 22px "Trebuchet MS"';
-    ctx.fillText("clone, commit, push, merge e conquiste seu proprio tile lendario.", 64, 166);
+    ctx.font = '600 19px "Trebuchet MS"';
+    ctx.fillText("clone, commit, push, merge e conquiste seu proprio tile lendario.", 54, 152);
 
-    drawHudCard(612, 54, 116, 84, "SCORE", state.score, "#f97316");
-    drawHudCard(744, 54, 116, 84, "BEST", state.best, "#0f766e");
+    drawHudCard(584, 48, 104, 78, "SCORE", state.score, "#f97316");
+    drawHudCard(702, 48, 104, 78, "BEST", state.best, "#0f766e");
     drawRestartButton();
 
-    drawRoundedRect(248, 182, 612, 56, 18, "rgba(255,255,255,0.08)");
+    drawRoundedRect(236, 182, 570, 52, 16, "rgba(255,255,255,0.08)");
     ctx.fillStyle = "#f8fafc";
-    ctx.font = '700 22px "Trebuchet MS"';
+    ctx.font = '700 20px "Trebuchet MS"';
     ctx.textAlign = "left";
-    ctx.fillText(state.message, 272, 217);
+    ctx.fillText(state.message, 262, 214);
   }
 
   function drawMenuOverlay() {
-    drawRoundedRect(106, 308, 708, 290, 30, "rgba(9, 14, 29, 0.82)");
+    drawRoundedRect(108, 310, 644, 246, 28, "rgba(9, 14, 29, 0.84)");
     ctx.textAlign = "center";
     ctx.fillStyle = "#f8fafc";
-    ctx.font = '900 56px "Trebuchet MS"';
-    ctx.fillText("Seu grid. Sua marca.", BASE_SIZE / 2, 384);
+    ctx.font = '900 50px "Trebuchet MS"';
+    ctx.fillText("Seu grid. Sua marca.", BASE_SIZE / 2, 376);
     ctx.fillStyle = "#bae6fd";
-    ctx.font = '700 28px "Trebuchet MS"';
-    ctx.fillText("Setas ou WASD movem. R reinicia. F alterna fullscreen.", BASE_SIZE / 2, 442);
-    ctx.fillText("Clique no tabuleiro para abrir a primeira run.", BASE_SIZE / 2, 486);
+    ctx.font = '700 24px "Trebuchet MS"';
+    ctx.fillText("Setas ou WASD movem. R reinicia. F alterna fullscreen.", BASE_SIZE / 2, 426);
+    ctx.fillText("Clique no tabuleiro para abrir a primeira run.", BASE_SIZE / 2, 466);
     ctx.fillStyle = "#facc15";
-    ctx.font = '900 32px "Trebuchet MS"';
-    ctx.fillText("Meta: chegar ao tile ALANKON GAMING 2048", BASE_SIZE / 2, 548);
+    ctx.font = '900 28px "Trebuchet MS"';
+    ctx.fillText("Meta: chegar ao tile ALANKON GAMING 2048", BASE_SIZE / 2, 516);
   }
 
   function drawEndRibbon() {
     if (state.mode !== "won" && state.mode !== "lost") return;
     const won = state.mode === "won";
-    drawRoundedRect(150, 678, 620, 110, 24, won ? "rgba(16, 185, 129, 0.9)" : "rgba(239, 68, 68, 0.9)");
+    drawRoundedRect(132, 676, 596, 96, 22, won ? "rgba(16, 185, 129, 0.9)" : "rgba(239, 68, 68, 0.9)");
     ctx.textAlign = "center";
     ctx.fillStyle = "#f8fafc";
-    ctx.font = '900 40px "Trebuchet MS"';
-    ctx.fillText(won ? "Marca propria desbloqueada" : "Fim da run", BASE_SIZE / 2, 722);
-    ctx.font = '700 24px "Trebuchet MS"';
-    ctx.fillText("Use Nova run ou aperte R para jogar de novo.", BASE_SIZE / 2, 758);
+    ctx.font = '900 36px "Trebuchet MS"';
+    ctx.fillText(won ? "Marca propria desbloqueada" : "Fim da run", BASE_SIZE / 2, 714);
+    ctx.font = '700 22px "Trebuchet MS"';
+    ctx.fillText("Use Nova run ou aperte R para jogar de novo.", BASE_SIZE / 2, 746);
   }
 
   function render() {
@@ -395,9 +523,9 @@
   }
 
   function resizeCanvas() {
-    const maxWidth = Math.min(window.innerWidth - 32, 980);
-    canvas.style.width = `${maxWidth}px`;
-    canvas.style.height = `${maxWidth}px`;
+    const size = Math.min(window.innerWidth - 20, window.innerHeight - 20, 860);
+    canvas.style.width = `${Math.max(320, size)}px`;
+    canvas.style.height = `${Math.max(320, size)}px`;
   }
 
   function isInsideRect(px, py, rect) {
@@ -471,10 +599,20 @@
       board_origin: { x: 0, y: 0, note: "board[row][col], row grows downward, col grows right" },
       board: state.board,
       labels: state.board.map((row) =>
-        row.map((value) => (value ? (TILE_THEME[value] || TILE_THEME[4096]).label : ""))
+        row.map((value) => (value ? getTileTheme(value).label : ""))
       ),
       last_move: state.lastMove,
-      message: state.message
+      message: state.message,
+      animation: state.animation
+        ? {
+            progress: Number(Math.min(1, state.animation.elapsed / state.animation.duration).toFixed(2)),
+            moves: state.animation.moves.map((move) => ({
+              from: [move.fromRow, move.fromCol],
+              to: [move.toRow, move.toCol],
+              value: move.value
+            }))
+          }
+        : null
     };
     return JSON.stringify(payload);
   };

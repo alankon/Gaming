@@ -9,3 +9,9 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Implementacao atual em andamento: rebrand completo, visual sci-fi, tiles inspirados em fluxo Git, recorde persistente em `localStorage`, botao visual de restart e pulsos de spawn/merge.
 - Validacao final concluida com Playwright: menu e gameplay revisados manualmente nas capturas `output/alankon-menu-v3` e `output/alankon-play-v3`.
 - Confirmado: branding `alankon Gaming`, labels unicas inspiradas em Git, botao visual `Nova run`, score persistente e `render_game_to_text` coerente com o canvas.
+- Nova solicitacao do usuario: trabalhar apenas no `Gaming`, corrigir setas verticais, reduzir o tamanho para caber na tela e adicionar animacao real de movimento ate o merge.
+- Em andamento: reescrita da logica de movimento sem rotacao, canvas menor e responsivo, e animacao de translacao para os tiles antes do merge final.
+- Validacao concluida com Playwright: capturas revisadas em `output/fix-menu-v3`, `output/fix-play-v3`, `output/fix-up` e `output/fix-down`.
+- Confirmado nesta rodada: tabuleiro inteiro cabe na tela, `up` e `down` respondem no sentido correto, e os tiles agora se deslocam visualmente ate a posicao de merge antes do estado final aparecer.
+- Polimento adicional concluido: easing mais suave, rastro curto durante o deslocamento e impacto visual melhor nos merges.
+- Validado em `output/polish-play`: o estado textual mostra a animacao em progresso e a captura confirma o deslocamento antes da consolidacao final.

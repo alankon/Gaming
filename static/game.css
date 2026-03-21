@@ -21,18 +21,18 @@ body {
 body {
   display: grid;
   place-items: center;
+  overflow: hidden;
 }
 
 .shell {
-  width: min(100vw, 980px);
-  padding: 16px;
+  width: min(100vw, 100vh, 900px);
+  padding: 10px;
 }
 
 canvas {
   display: block;
-  width: 100%;
-  height: auto;
-  max-height: calc(100vh - 32px);
+  width: min(calc(100vw - 20px), calc(100vh - 20px), 860px);
+  height: min(calc(100vw - 20px), calc(100vh - 20px), 860px);
   border-radius: 28px;
   box-shadow: 0 28px 90px rgba(8, 15, 32, 0.55);
   background: transparent;
