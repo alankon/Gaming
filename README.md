@@ -11,6 +11,25 @@ python app.py
 
 Abra `http://127.0.0.1:5000`.
 
+## Encerrar totalmente o servidor
+
+Temos tres formas agora:
+
+```bash
+# via script no WSL/Linux
+chmod +x server.sh
+./server.sh start
+./server.sh status
+./server.sh stop
+./server.sh kill   # alias: quit, exit
+```
+
+```bash
+# via endpoint local (somente localhost)
+curl http://127.0.0.1:5000/quit
+# aliases: /exit e /kill
+```
+
 ## Validacao
 
 O projeto inclui os payloads de Playwright:

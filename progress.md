@@ -18,3 +18,6 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Ajuste extra concluido: geometria do tabuleiro corrigida para caber dentro do canvas, sem corte da parte inferior.
 - Entrada atualizada: swipe/drag por pointer events adicionado para mouse e touch, mantendo clique para iniciar e teclado como fallback.
 - Validado em `output/layout-fix` e `output/input-fix`: menu visivel sem corte e estado jogavel apos a interacao.
+- Nova solicitacao: forma confiavel de encerrar servidor que ficou em background.
+- Implementado: endpoints locais `/quit`, `/exit`, `/kill`, endpoint `/status`, PID file e script `server.sh` com `start|stop|status|restart|kill|quit|exit`.
+- Validacao: fluxo completo testado via WSL com start/status/quit/kill e confirmacao de processo parado.
