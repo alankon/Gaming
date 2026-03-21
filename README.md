@@ -28,6 +28,17 @@ O `start` sempre procura uma porta livre no intervalo `5000-5999`.
 Se `5000` estiver ocupada, ele sobe automaticamente em outra `5***`.
 Use `./server.sh status` para ver a porta ativa.
 
+No Windows (PowerShell), use o script equivalente:
+
+```powershell
+.\server.ps1 start
+.\server.ps1 status
+.\server.ps1 stop
+.\server.ps1 kill   # alias: quit, exit
+```
+
+Tambem em PowerShell o `start` procura sempre uma porta livre em `5000-5999`.
+
 ```bash
 # via endpoint local (somente localhost)
 PORT=5001 # exemplo

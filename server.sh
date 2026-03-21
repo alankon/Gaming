@@ -23,9 +23,22 @@ read_port() {
   echo "$port"
 }
 
+is_windows_port_in_use() {
+  local port="$1"
+  if ! command -v powershell.exe >/dev/null 2>&1; then
+    return 1
+  fi
+  local result
+  result="$(powershell.exe -NoProfile -Command "\$p=$port; if (Get-NetTCPConnection -State Listen -LocalPort \$p -ErrorAction SilentlyContinue) { 'inuse' }" 2>/dev/null | tr -d '\r')"
+  [[ "$result" == *inuse* ]]
+}
+
 is_port_free() {
   local port="$1"
   (echo >/dev/tcp/127.0.0.1/"$port") >/dev/null 2>&1 && return 1
+  if is_windows_port_in_use "$port"; then
+    return 1
+  fi
   return 0
 }
 
@@ -64,6 +77,21 @@ kill_by_port() {
     # shellcheck disable=SC2086
     kill -9 $pids 2>/dev/null || true
   fi
+}
+
+kill_windows_by_port() {
+  local port="$1"
+  if ! command -v powershell.exe >/dev/null 2>&1; then
+    return 0
+  fi
+  powershell.exe -NoProfile -Command "\$p=$port; \$conns=Get-NetTCPConnection -State Listen -LocalPort \$p -ErrorAction SilentlyContinue; foreach (\$c in \$conns) { try { Stop-Process -Id \$c.OwningProcess -Force -ErrorAction SilentlyContinue } catch {} }" >/dev/null 2>&1 || true
+}
+
+kill_windows_gaming_app() {
+  if ! command -v powershell.exe >/dev/null 2>&1; then
+    return 0
+  fi
+  powershell.exe -NoProfile -Command "\$procs=Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { \$_.Name -eq 'python.exe' -and \$_.CommandLine -match 'Gaming.*app.py' }; foreach (\$p in \$procs) { try { Stop-Process -Id \$p.ProcessId -Force -ErrorAction SilentlyContinue } catch {} }" >/dev/null 2>&1 || true
 }
 
 start_server() {
@@ -107,16 +135,23 @@ stop_server() {
   fi
   local pid
   pid="$(cat "$PID_FILE")"
-  kill "$pid" || true
+  kill "$pid" 2>/dev/null || true
+  if kill -0 "$pid" 2>/dev/null && command -v powershell.exe >/dev/null 2>&1; then
+    powershell.exe -NoProfile -Command "Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1 || true
+  fi
   sleep 1
   if kill -0 "$pid" 2>/dev/null; then
     echo "Graceful stop failed, forcing kill..."
     kill -9 "$pid" || true
+    if command -v powershell.exe >/dev/null 2>&1; then
+      powershell.exe -NoProfile -Command "Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1 || true
+    fi
   fi
   local port
   port="$(read_port || true)"
   if [[ -n "$port" ]]; then
     kill_by_port "$port"
+    kill_windows_by_port "$port"
   fi
   rm -f "$PID_FILE"
   rm -f "$PORT_FILE"
@@ -126,10 +161,16 @@ stop_server() {
 kill_all() {
   pkill -f "python3 app.py" || true
   pkill -f "python app.py" || true
+  kill_windows_gaming_app
   local port
   port="$(read_port || true)"
   if [[ -n "$port" ]]; then
     kill_by_port "$port"
+    kill_windows_by_port "$port"
+  else
+    for port in $(seq 5000 5999); do
+      kill_windows_by_port "$port"
+    done
   fi
   rm -f "$PID_FILE"
   rm -f "$PORT_FILE"

@@ -24,3 +24,6 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Nova solicitacao: evitar conflito com porta 5000 e sempre subir em uma porta livre `5***`.
 - Implementado em `server.sh`: scanner de porta `5000-5999`, selecao automatica de porta vazia, gravação de `.gaming-server.port` e status com URL ativa.
 - `stop` e `kill` fortalecidos: encerramento por PID e fallback por porta TCP para garantir parada total.
+- Compatibilidade ampliada: adicionado `server.ps1` para Windows com os mesmos comandos (`start|stop|status|restart|kill|quit|exit`) e mesma regra de porta dinamica `5***`.
+- `server.sh` melhorado para considerar portas ocupadas no Windows ao escolher porta no WSL, evitando conflito entre os dois ambientes.
+- Validacao cruzada: com a 5000 ocupada, Windows subiu em 5002 e WSL subiu em 5001, ambos com stop/kill funcionando.
