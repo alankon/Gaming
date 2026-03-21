@@ -27,3 +27,6 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Compatibilidade ampliada: adicionado `server.ps1` para Windows com os mesmos comandos (`start|stop|status|restart|kill|quit|exit`) e mesma regra de porta dinamica `5***`.
 - `server.sh` melhorado para considerar portas ocupadas no Windows ao escolher porta no WSL, evitando conflito entre os dois ambientes.
 - Validacao cruzada: com a 5000 ocupada, Windows subiu em 5002 e WSL subiu em 5001, ambos com stop/kill funcionando.
+- Ajuste adicional: resolvido erro de shell no WSL em `/root/.bashrc` (funcao `codex` invalida).
+- Novo comando operacional em ambos scripts: `free-port [port]` para liberar explicitamente portas ocupadas por outros servicos (ex.: 5000).
+- Validacao: `./server.sh free-port 5000` e `.\\server.ps1 free-port 5000` executando com sucesso.

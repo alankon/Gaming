@@ -35,6 +35,7 @@ No Windows (PowerShell), use o script equivalente:
 .\server.ps1 status
 .\server.ps1 stop
 .\server.ps1 kill   # alias: quit, exit
+.\\server.ps1 free-port 5000
 ```
 
 Tambem em PowerShell o `start` procura sempre uma porta livre em `5000-5999`.
@@ -46,6 +47,11 @@ curl http://127.0.0.1:$PORT/status
 curl http://127.0.0.1:$PORT/quit
 # aliases: /exit e /kill
 ```
+
+Importante:
+- No WSL/Linux use `./server.sh ...`
+- No PowerShell use `.\\server.ps1 ...`
+- Se a 5000 estiver presa por outro servico, use `free-port 5000` no ambiente correspondente.
 
 ## Validacao
 

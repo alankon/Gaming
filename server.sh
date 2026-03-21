@@ -94,6 +94,17 @@ kill_windows_gaming_app() {
   powershell.exe -NoProfile -Command "\$procs=Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object { \$_.Name -eq 'python.exe' -and \$_.CommandLine -match 'Gaming.*app.py' }; foreach (\$p in \$procs) { try { Stop-Process -Id \$p.ProcessId -Force -ErrorAction SilentlyContinue } catch {} }" >/dev/null 2>&1 || true
 }
 
+free_port() {
+  local port="${1:-5000}"
+  if [[ ! "$port" =~ ^[0-9]{2,5}$ ]]; then
+    echo "Invalid port: $port"
+    exit 2
+  fi
+  kill_by_port "$port"
+  kill_windows_by_port "$port"
+  echo "Port $port released (best effort)."
+}
+
 start_server() {
   if is_running; then
     local running_port
@@ -199,8 +210,9 @@ case "$cmd" in
   status) status_server ;;
   restart) stop_server; start_server ;;
   kill|quit|exit) kill_all ;;
+  free-port) free_port "${2:-5000}" ;;
   *)
-    echo "Usage: ./server.sh {start|stop|status|restart|kill|quit|exit}"
+    echo "Usage: ./server.sh {start|stop|status|restart|kill|quit|exit|free-port [port]}"
     exit 2
     ;;
 esac

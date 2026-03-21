@@ -1,7 +1,9 @@
 param(
   [Parameter(Position=0)]
-  [ValidateSet("start","stop","status","restart","kill","quit","exit")]
-  [string]$Command = "status"
+  [ValidateSet("start","stop","status","restart","kill","quit","exit","free-port")]
+  [string]$Command = "status",
+  [Parameter(Position=1)]
+  [int]$Port = 5000
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,7 +13,6 @@ $PidFile = Join-Path $Root ".gaming-server.pid"
 $PortFile = Join-Path $Root ".gaming-server.port"
 $LogOut = Join-Path $Root "flask.out.log"
 $LogErr = Join-Path $Root "flask.err.log"
-
 function Get-TrackedPid {
   if (!(Test-Path $PidFile)) { return $null }
   $raw = (Get-Content $PidFile -ErrorAction SilentlyContinue | Select-Object -First 1)
@@ -137,6 +138,14 @@ function Kill-All {
   Write-Output "All app.py processes killed."
 }
 
+function Free-Port([int]$Port) {
+  $listeners = Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue
+  foreach ($ln in $listeners) {
+    try { Stop-Process -Id $ln.OwningProcess -Force -ErrorAction SilentlyContinue } catch {}
+  }
+  Write-Output "Port $Port released (best effort)."
+}
+
 function Show-Status {
   $trackedPid = Get-TrackedPid
   $port = Get-TrackedPort
@@ -160,4 +169,5 @@ switch ($Command) {
   "kill" { Kill-All }
   "quit" { Kill-All }
   "exit" { Kill-All }
+  "free-port" { Free-Port -Port $Port }
 }
