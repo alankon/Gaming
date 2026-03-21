@@ -1,0 +1,39 @@
+:root {
+  color-scheme: dark;
+  --bg: #020617;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, rgba(56, 189, 248, 0.22) 0%, transparent 26%),
+    radial-gradient(circle at 80% 20%, rgba(244, 114, 182, 0.18) 0%, transparent 20%),
+    linear-gradient(180deg, #020617 0%, #0f172a 55%, #111827 100%);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+body {
+  display: grid;
+  place-items: center;
+}
+
+.shell {
+  width: min(100vw, 980px);
+  padding: 16px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(100vh - 32px);
+  border-radius: 28px;
+  box-shadow: 0 28px 90px rgba(8, 15, 32, 0.55);
+  background: transparent;
+}

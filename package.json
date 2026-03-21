@@ -1,0 +1,12 @@
+{
+  "name": "alankon-gaming-git-grid-2048",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jogo autoral alankon Gaming com tema Git Grid 2048 servido por Flask.",
+  "scripts": {
+    "play:test": "node C:/Users/Alan/.codex/skills/develop-web-game/scripts/web_game_playwright_client.js"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  }
+}

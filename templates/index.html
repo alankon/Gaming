@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>alankon Gaming | Git Grid 2048</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='game.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <canvas
+      id="game"
+      width="920"
+      height="920"
+      aria-label="alankon Gaming Git Grid 2048"
+      role="img"
+    ></canvas>
+  </main>
+  <script src="{{ url_for('static', filename='game.js') }}"></script>
+</body>
+</html>
