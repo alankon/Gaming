@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, render_template, request
 from flask_wtf.csrf import CSRFProtect
-import atexit
 import os
 import signal
 import threading
@@ -10,19 +9,7 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
 
 csrf = CSRFProtect(app)
 PID_FILE = os.path.join(os.path.dirname(__file__), ".gaming-server.pid")
-
-
-def _write_pid_file():
-    with open(PID_FILE, "w", encoding="utf-8") as handle:
-        handle.write(str(os.getpid()))
-
-
-def _remove_pid_file():
-    try:
-        if os.path.exists(PID_FILE):
-            os.remove(PID_FILE)
-    except OSError:
-        pass
+PORT_FILE = os.path.join(os.path.dirname(__file__), ".gaming-server.port")
 
 
 def _is_local_request():
@@ -52,7 +39,13 @@ def health():
 
 @app.route("/status")
 def status():
-    return jsonify(status="running", pid=os.getpid(), pid_file=PID_FILE), 200
+    return jsonify(
+        status="running",
+        pid=os.getpid(),
+        pid_file=PID_FILE,
+        port=int(os.getenv("PORT", "5000")),
+        port_file=PORT_FILE,
+    ), 200
 
 
 @app.route("/quit", methods=["GET", "POST"])
@@ -66,7 +59,5 @@ def quit_server():
 
 
 if __name__ == "__main__":
-    _write_pid_file()
-    atexit.register(_remove_pid_file)
     port = int(os.getenv("PORT", "5000"))
     app.run("0.0.0.0", port=port, debug=False)

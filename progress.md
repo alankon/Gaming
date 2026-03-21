@@ -21,3 +21,6 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Nova solicitacao: forma confiavel de encerrar servidor que ficou em background.
 - Implementado: endpoints locais `/quit`, `/exit`, `/kill`, endpoint `/status`, PID file e script `server.sh` com `start|stop|status|restart|kill|quit|exit`.
 - Validacao: fluxo completo testado via WSL com start/status/quit/kill e confirmacao de processo parado.
+- Nova solicitacao: evitar conflito com porta 5000 e sempre subir em uma porta livre `5***`.
+- Implementado em `server.sh`: scanner de porta `5000-5999`, selecao automatica de porta vazia, gravação de `.gaming-server.port` e status com URL ativa.
+- `stop` e `kill` fortalecidos: encerramento por PID e fallback por porta TCP para garantir parada total.

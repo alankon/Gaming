@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PID_FILE="$ROOT_DIR/.gaming-server.pid"
+PORT_FILE="$ROOT_DIR/.gaming-server.port"
 LOG_OUT="$ROOT_DIR/flask.out.log"
 LOG_ERR="$ROOT_DIR/flask.err.log"
 
@@ -14,17 +15,85 @@ is_running() {
   kill -0 "$pid" 2>/dev/null
 }
 
+read_port() {
+  [[ -f "$PORT_FILE" ]] || return 1
+  local port
+  port="$(cat "$PORT_FILE")"
+  [[ "$port" =~ ^5[0-9]{3}$ ]] || return 1
+  echo "$port"
+}
+
+is_port_free() {
+  local port="$1"
+  (echo >/dev/tcp/127.0.0.1/"$port") >/dev/null 2>&1 && return 1
+  return 0
+}
+
+find_free_port() {
+  local port
+  for port in $(seq 5000 5999); do
+    if is_port_free "$port"; then
+      echo "$port"
+      return 0
+    fi
+  done
+  return 1
+}
+
+wait_for_port() {
+  local port="$1"
+  local retries=25
+  while (( retries > 0 )); do
+    if ! is_port_free "$port"; then
+      return 0
+    fi
+    sleep 0.2
+    retries=$((retries - 1))
+  done
+  return 1
+}
+
+kill_by_port() {
+  local port="$1"
+  local pids
+  pids="$(fuser -n tcp "$port" 2>/dev/null || true)"
+  if [[ -n "$pids" ]]; then
+    # shellcheck disable=SC2086
+    kill $pids 2>/dev/null || true
+    sleep 1
+    # shellcheck disable=SC2086
+    kill -9 $pids 2>/dev/null || true
+  fi
+}
+
 start_server() {
   if is_running; then
-    echo "Server already running with PID $(cat "$PID_FILE")"
+    local running_port
+    running_port="$(read_port || true)"
+    if [[ -n "$running_port" ]]; then
+      echo "Server already running with PID $(cat "$PID_FILE") on port $running_port"
+    else
+      echo "Server already running with PID $(cat "$PID_FILE")"
+    fi
     exit 0
   fi
   cd "$ROOT_DIR"
-  nohup python3 app.py >"$LOG_OUT" 2>"$LOG_ERR" &
-  sleep 1
-  if is_running; then
-    echo "Server started. PID $(cat "$PID_FILE")"
+  local port
+  port="$(find_free_port)" || {
+    echo "No free port found in range 5000-5999"
+    exit 1
+  }
+  PORT="$port" nohup python3 app.py >"$LOG_OUT" 2>"$LOG_ERR" &
+  local pid
+  pid="$!"
+  echo "$pid" > "$PID_FILE"
+  echo "$port" > "$PORT_FILE"
+
+  if kill -0 "$pid" 2>/dev/null && wait_for_port "$port"; then
+    echo "Server started. PID $pid on port $port"
+    echo "URL: http://127.0.0.1:$port"
   else
+    rm -f "$PID_FILE" "$PORT_FILE"
     echo "Server failed to start. Check $LOG_ERR"
     exit 1
   fi
@@ -40,24 +109,42 @@ stop_server() {
   pid="$(cat "$PID_FILE")"
   kill "$pid" || true
   sleep 1
-  if is_running; then
+  if kill -0 "$pid" 2>/dev/null; then
     echo "Graceful stop failed, forcing kill..."
     kill -9 "$pid" || true
   fi
+  local port
+  port="$(read_port || true)"
+  if [[ -n "$port" ]]; then
+    kill_by_port "$port"
+  fi
   rm -f "$PID_FILE"
+  rm -f "$PORT_FILE"
   echo "Server stopped."
 }
 
 kill_all() {
   pkill -f "python3 app.py" || true
   pkill -f "python app.py" || true
+  local port
+  port="$(read_port || true)"
+  if [[ -n "$port" ]]; then
+    kill_by_port "$port"
+  fi
   rm -f "$PID_FILE"
+  rm -f "$PORT_FILE"
   echo "All app.py processes killed."
 }
 
 status_server() {
   if is_running; then
-    echo "RUNNING PID $(cat "$PID_FILE")"
+    local port
+    port="$(read_port || true)"
+    if [[ -n "$port" ]]; then
+      echo "RUNNING PID $(cat "$PID_FILE") PORT $port URL http://127.0.0.1:$port"
+    else
+      echo "RUNNING PID $(cat "$PID_FILE")"
+    fi
     exit 0
   fi
   echo "STOPPED"

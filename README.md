@@ -24,9 +24,15 @@ chmod +x server.sh
 ./server.sh kill   # alias: quit, exit
 ```
 
+O `start` sempre procura uma porta livre no intervalo `5000-5999`.
+Se `5000` estiver ocupada, ele sobe automaticamente em outra `5***`.
+Use `./server.sh status` para ver a porta ativa.
+
 ```bash
 # via endpoint local (somente localhost)
-curl http://127.0.0.1:5000/quit
+PORT=5001 # exemplo
+curl http://127.0.0.1:$PORT/status
+curl http://127.0.0.1:$PORT/quit
 # aliases: /exit e /kill
 ```
 
