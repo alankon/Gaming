@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>alankon Gaming | Aprender Teclas</title>
+  <link rel="stylesheet" href="static/learn_keys.css?v=sound-v7">
+</head>
+<body>
+  <main class="keys-shell">
+    <header class="keys-header">
+      <a class="back-link" href="index.html">Voltar ao menu</a>
+      <h1>Aprender Teclas</h1>
+      <p>Aperte qualquer tecla para ver a animacao e o som fofinho.</p>
+    </header>
+
+    <section class="live-panel">
+      <div class="fun-card" aria-live="polite">
+        <div class="key-badge" id="last-key">?</div>
+        <div class="gif-stage" id="gif-stage">
+          <div class="gif-shadow"></div>
+          <div class="gif-character" id="fun-emoji">🌟</div>
+          <div class="spark spark-a"></div>
+          <div class="spark spark-b"></div>
+          <div class="spark spark-c"></div>
+        </div>
+        <p class="fun-label" id="fun-label">Aperte uma tecla para aparecer um amiguinho animado.</p>
+        <p class="hint" id="hint-text">Letras e numeros mostram seus amiguinhos. Setas chamam o burrinho.</p>
+      </div>
+      <div class="stats">
+        <span>Total de teclas: <strong id="press-count">0</strong></span>
+        <span class="audio-status" id="audio-status">Som pronto</span>
+      </div>
+    </section>
+
+    <section class="keyboard-zone">
+      <h2>Teclado touch</h2>
+      <div id="touch-keys" class="touch-keys" aria-label="Teclado virtual"></div>
+    </section>
+  </main>
+  <script src="static/learn_keys.js?v=sound-v7"></script>
+</body>
+</html>
