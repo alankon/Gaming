@@ -8,7 +8,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v3";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v4-buffered";
   const buttons = new Map();
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelhinha", sound: "buzz" },
@@ -146,6 +146,145 @@
     source.stop(start + duration + 0.04);
   }
 
+  function softClip(value) {
+    return Math.tanh(value * 1.8) * 0.82;
+  }
+
+  function burstEnvelope(t, start, duration) {
+    if (t < start || t > start + duration) return 0;
+    const x = (t - start) / duration;
+    const attack = Math.min(1, x / 0.12);
+    const release = Math.pow(Math.max(0, 1 - x), 1.7);
+    return attack * release;
+  }
+
+  function playBufferSound(kind) {
+    if (!audioCtx) return false;
+    const sampleRate = audioCtx.sampleRate;
+    const durations = {
+      meow: 0.82,
+      woof: 0.62,
+      dragon: 0.9,
+      roar: 0.82,
+      tiger: 0.82,
+      donkey: 1.05,
+      trumpet: 0.82,
+      quack: 0.5,
+      ribbit: 0.54,
+      robot: 0.58,
+      vroom: 0.72,
+      sparkle: 0.72,
+      magic: 0.72,
+      buzz: 0.48,
+      bubble: 0.58,
+      boing: 0.42,
+      bounce: 0.42,
+      pop: 0.28,
+      ding: 0.42,
+      tap: 0.18,
+      baby: 0.5,
+      jump: 0.34,
+      hug: 0.44,
+      plop: 0.32,
+      wind: 0.62,
+      zip: 0.28,
+      clip: 0.22
+    };
+    const duration = durations[kind] || 0.42;
+    const buffer = audioCtx.createBuffer(1, Math.ceil(sampleRate * duration), sampleRate);
+    const data = buffer.getChannelData(0);
+    let noiseState = 0;
+    const noise = () => {
+      noiseState = noiseState * 0.72 + (Math.random() * 2 - 1) * 0.28;
+      return noiseState;
+    };
+
+    for (let i = 0; i < data.length; i++) {
+      const t = i / sampleRate;
+      let value = 0;
+
+      if (kind === "woof") {
+        const env = burstEnvelope(t, 0.02, 0.18) + burstEnvelope(t, 0.28, 0.22);
+        value = env * (Math.sign(Math.sin(2 * Math.PI * 118 * t)) * 0.85 + noise() * 0.75);
+      } else if (kind === "meow") {
+        const env = burstEnvelope(t, 0.03, 0.68);
+        const pitch = 920 - 520 * (t / duration) + Math.sin(t * 42) * 28;
+        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.95 + Math.sin(2 * Math.PI * pitch * 2.01 * t) * 0.24);
+      } else if (kind === "dragon" || kind === "roar" || kind === "tiger") {
+        const env = burstEnvelope(t, 0.02, duration - 0.06);
+        const base = kind === "dragon" ? 58 : kind === "tiger" ? 86 : 72;
+        const sweep = base + Math.sin(t * 8) * 14 + (1 - t / duration) * 52;
+        const bite = kind === "tiger" ? Math.sin(2 * Math.PI * 430 * t) * 0.18 : 0;
+        value = env * (Math.sin(2 * Math.PI * sweep * t) * 1.05 + noise() * 0.98 + bite);
+      } else if (kind === "donkey") {
+        const first = burstEnvelope(t, 0.02, 0.42);
+        const second = burstEnvelope(t, 0.48, 0.5);
+        const p1 = 430 - 250 * Math.min(1, t / 0.42);
+        const p2 = 165 + 390 * Math.max(0, (t - 0.48) / 0.5);
+        value = first * (Math.sign(Math.sin(2 * Math.PI * p1 * t)) * 0.78 + noise() * 0.35);
+        value += second * (Math.sign(Math.sin(2 * Math.PI * p2 * t)) * 0.9 + noise() * 0.42);
+      } else if (kind === "trumpet") {
+        const env = burstEnvelope(t, 0.02, 0.7);
+        const pitch = 240 + Math.sin(t * 10) * 90 + (t / duration) * 260;
+        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.75 + Math.sin(2 * Math.PI * pitch * 2 * t) * 0.25);
+      } else if (kind === "quack") {
+        const env = burstEnvelope(t, 0.02, 0.2) + burstEnvelope(t, 0.22, 0.18);
+        const pitch = 520 - t * 310;
+        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.78 + noise() * 0.18);
+      } else if (kind === "ribbit") {
+        const env = burstEnvelope(t, 0.02, 0.18) + burstEnvelope(t, 0.27, 0.22);
+        const pitch = 240 + Math.sin(t * 36) * 190;
+        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.72);
+      } else if (kind === "robot") {
+        const step = Math.floor(t / 0.09) % 2 ? 260 : 410;
+        const env = burstEnvelope(t, 0.02, 0.5);
+        value = env * Math.sign(Math.sin(2 * Math.PI * step * t)) * 0.7;
+      } else if (kind === "vroom") {
+        const env = burstEnvelope(t, 0.02, 0.62);
+        const pitch = 75 + t * 145 + Math.sin(t * 34) * 20;
+        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.75 + noise() * 0.48);
+      } else if (kind === "buzz") {
+        const env = burstEnvelope(t, 0.01, 0.42);
+        const pitch = 430 + Math.sin(t * 95) * 85;
+        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.48 + noise() * 0.25);
+      } else if (kind === "sparkle" || kind === "magic") {
+        const freqs = kind === "sparkle" ? [740, 980, 1320, 1760] : [660, 990, 1320, 1980];
+        for (let j = 0; j < freqs.length; j++) {
+          value += burstEnvelope(t, j * 0.08, 0.26) * Math.sin(2 * Math.PI * freqs[j] * t) * 0.38;
+        }
+      } else if (kind === "bubble") {
+        value = burstEnvelope(t, 0.02, 0.16) * Math.sin(2 * Math.PI * (360 + t * 1250) * t) * 0.55;
+        value += burstEnvelope(t, 0.22, 0.18) * Math.sin(2 * Math.PI * (460 + t * 1200) * t) * 0.5;
+      } else if (kind === "boing" || kind === "jump" || kind === "bounce") {
+        const env = burstEnvelope(t, 0.01, duration - 0.04);
+        const pitch = 260 + Math.sin((t / duration) * Math.PI) * 620;
+        value = env * Math.sin(2 * Math.PI * pitch * t) * 0.72;
+      } else if (kind === "pop" || kind === "tap" || kind === "clip") {
+        const env = burstEnvelope(t, 0.005, duration - 0.02);
+        value = env * (noise() * 0.9 + Math.sin(2 * Math.PI * 760 * t) * 0.35);
+      } else if (kind === "baby" || kind === "hug" || kind === "ding") {
+        const env = burstEnvelope(t, 0.01, duration - 0.04);
+        const pitch = kind === "baby" ? 760 + Math.sin(t * 22) * 160 : kind === "hug" ? 430 : 920;
+        value = env * Math.sin(2 * Math.PI * pitch * t) * 0.62;
+      } else if (kind === "wind" || kind === "zip" || kind === "plop") {
+        const env = burstEnvelope(t, 0.01, duration - 0.03);
+        const pitch = kind === "zip" ? 920 - t * 2100 : kind === "plop" ? 260 - t * 520 : 520 + Math.sin(t * 16) * 170;
+        value = env * (Math.sin(2 * Math.PI * Math.max(80, pitch) * t) * 0.45 + noise() * 0.28);
+      } else {
+        const env = burstEnvelope(t, 0.01, duration - 0.03);
+        value = env * Math.sin(2 * Math.PI * 620 * t) * 0.5;
+      }
+
+      data[i] = softClip(value);
+    }
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(masterGain || audioCtx.destination);
+    source.start(nowTime() + 0.01);
+    return true;
+  }
+
   function playCuteSound(kind) {
     if (!audioCtx) {
       state.audioState = "unavailable";
@@ -154,6 +293,12 @@
     }
     const play = () => {
       const t = nowTime() + 0.015;
+      if (playBufferSound(kind)) {
+        state.audioReady = true;
+        state.audioState = audioCtx.state;
+        audioStatusEl.textContent = `Som ativo: ${kind}`;
+        return;
+      }
       const sounds = {
         meow: () => {
           addSlide(980, 430, t, 0.28, "sawtooth", 0.22);
