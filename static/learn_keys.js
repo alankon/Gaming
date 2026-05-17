@@ -8,16 +8,22 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v5-public-assets";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v6-single-voice";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     meow: "/static/sounds/cat-meow-public-domain.mp3",
     woof: "/static/sounds/dog-bark-wikimedia.ogg",
+    jump: "/static/sounds/howler-monkey-cc-by.ogg",
+    trumpet: "/static/sounds/elephant-trumpet-cc0.ogg",
+    ribbit: "/static/sounds/frog-croak-open.oga",
     tiger: "/static/sounds/big-cat-roar-public-domain.ogg",
     roar: "/static/sounds/big-cat-roar-public-domain.ogg",
     dragon: "/static/sounds/big-cat-roar-public-domain.ogg"
   };
   const publicSoundCache = new Map();
+  const activeSoundNodes = new Set();
+  let activePublicAudio = null;
+  let soundTicket = 0;
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelhinha", sound: "buzz" },
     B: { emoji: "🍼", label: "B de bebe feliz", sound: "baby" },
@@ -95,6 +101,29 @@
     compressor.connect(audioCtx.destination);
   }
 
+  function rememberNode(node) {
+    activeSoundNodes.add(node);
+    node.addEventListener("ended", () => activeSoundNodes.delete(node), { once: true });
+    return node;
+  }
+
+  function stopCurrentSound() {
+    soundTicket += 1;
+    if (activePublicAudio) {
+      try {
+        activePublicAudio.pause();
+        activePublicAudio.currentTime = 0;
+      } catch {}
+      activePublicAudio = null;
+    }
+    for (const node of activeSoundNodes) {
+      try {
+        node.stop(0);
+      } catch {}
+    }
+    activeSoundNodes.clear();
+  }
+
   function publicAudioFor(kind) {
     const src = PUBLIC_SOUNDS[kind];
     if (!src) return null;
@@ -107,10 +136,11 @@
     return publicSoundCache.get(kind);
   }
 
-  function playPublicSound(kind) {
+  function playPublicSound(kind, ticket) {
     const audio = publicAudioFor(kind);
     if (!audio) return false;
     try {
+      activePublicAudio = audio;
       audio.pause();
       audio.currentTime = 0;
       const playPromise = audio.play();
@@ -119,7 +149,9 @@
       state.lastSoundSource = "public-file";
       audioStatusEl.textContent = `Som publico: ${kind}`;
       if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => playGeneratedSound(kind));
+        playPromise.catch(() => {
+          if (ticket === soundTicket) playGeneratedSound(kind, ticket);
+        });
       }
       return true;
     } catch {
@@ -133,7 +165,7 @@
 
   function addTone(freq, start, duration, type, volume) {
     if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
+    const osc = rememberNode(audioCtx.createOscillator());
     const gain = audioCtx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freq, start);
@@ -148,7 +180,7 @@
 
   function addSlide(freqStart, freqEnd, start, duration, type, volume) {
     if (!audioCtx) return;
-    const osc = audioCtx.createOscillator();
+    const osc = rememberNode(audioCtx.createOscillator());
     const gain = audioCtx.createGain();
     osc.type = type;
     osc.frequency.setValueAtTime(freqStart, start);
@@ -170,7 +202,7 @@
     for (let i = 0; i < channel.length; i++) {
       channel[i] = Math.random() * 2 - 1;
     }
-    const source = audioCtx.createBufferSource();
+    const source = rememberNode(audioCtx.createBufferSource());
     const filter = audioCtx.createBiquadFilter();
     const gain = audioCtx.createGain();
     filter.type = "bandpass";
@@ -319,20 +351,22 @@
       data[i] = softClip(value);
     }
 
-    const source = audioCtx.createBufferSource();
+    const source = rememberNode(audioCtx.createBufferSource());
     source.buffer = buffer;
     source.connect(masterGain || audioCtx.destination);
     source.start(nowTime() + 0.01);
     return true;
   }
 
-  function playGeneratedSound(kind) {
+  function playGeneratedSound(kind, ticket) {
     if (!audioCtx) {
       state.audioState = "unavailable";
       audioStatusEl.textContent = "Som indisponivel";
       return;
     }
+    if (ticket !== soundTicket) return;
     const play = () => {
+      if (ticket !== soundTicket) return;
       const t = nowTime() + 0.015;
       if (playBufferSound(kind)) {
         state.audioReady = true;
@@ -449,8 +483,10 @@
   }
 
   function playCuteSound(kind) {
-    if (playPublicSound(kind)) return;
-    playGeneratedSound(kind);
+    stopCurrentSound();
+    const ticket = soundTicket;
+    if (playPublicSound(kind, ticket)) return;
+    playGeneratedSound(kind, ticket);
   }
 
   function flashButton(char) {
@@ -564,7 +600,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam mapeamento educativo; setas chamam o burrinho; outras teclas nao mapeadas voltam para a estrela. Sons publicos sao usados quando disponiveis com fallback procedural."
+      note: "A-Z e 0-9 usam mapeamento educativo; setas chamam o burrinho; outras teclas nao mapeadas voltam para a estrela. Cada tecla interrompe o som anterior antes de tocar o novo."
     });
   };
 
