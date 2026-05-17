@@ -1,6 +1,9 @@
 # alankon Gaming
 
-Git Grid 2048 e a primeira versao oficial do jogo no repositorio `Gaming`.
+Menu web com dois jogos:
+
+- `Git Grid 2048` em `/2048`
+- `Aprender Teclas` em `/aprender-teclas`
 
 ## Rodar localmente
 
@@ -9,7 +12,7 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
-Abra `http://127.0.0.1:5000`.
+Abra `http://127.0.0.1:5000` para o menu de jogos.
 
 ## Encerrar totalmente o servidor
 

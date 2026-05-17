@@ -1,0 +1,124 @@
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.25), transparent 30%),
+    radial-gradient(circle at 90% 100%, rgba(249, 115, 22, 0.2), transparent 35%),
+    linear-gradient(180deg, #020617 0%, #0b1324 60%, #111827 100%);
+  color: #e5eefb;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.keys-shell {
+  width: min(980px, 100%);
+}
+
+.keys-header h1 {
+  margin: 8px 0 0;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+}
+
+.keys-header p {
+  margin: 10px 0 18px;
+  color: #9fb2cb;
+}
+
+.back-link {
+  color: #67e8f9;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.live-panel {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.last-key {
+  font-size: clamp(3rem, 14vw, 8rem);
+  font-weight: 900;
+  text-align: center;
+  line-height: 1;
+  color: #f8fafc;
+}
+
+.hint {
+  margin: 14px 0 10px;
+  color: #acd1f2;
+  text-align: center;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.speech-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 700;
+  background: #0ea5e9;
+  color: #03111f;
+  cursor: pointer;
+}
+
+.keyboard-zone {
+  margin-top: 18px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.keyboard-zone h2 {
+  margin: 0 0 12px;
+}
+
+.touch-keys {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.key-btn {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  min-height: 44px;
+  background: rgba(30, 41, 59, 0.9);
+  color: #e5eefb;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.key-btn.active {
+  background: #facc15;
+  color: #1f2937;
+}
+
+@media (max-width: 800px) {
+  .touch-keys {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}

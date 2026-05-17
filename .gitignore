@@ -2,3 +2,5 @@ node_modules/
 output/
 __pycache__/
 *.log
+.gaming-server.pid
+.gaming-server.port

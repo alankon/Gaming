@@ -30,3 +30,5 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Ajuste adicional: resolvido erro de shell no WSL em `/root/.bashrc` (funcao `codex` invalida).
 - Novo comando operacional em ambos scripts: `free-port [port]` para liberar explicitamente portas ocupadas por outros servicos (ex.: 5000).
 - Validacao: `./server.sh free-port 5000` e `.\\server.ps1 free-port 5000` executando com sucesso.
+- Nova solicitacao: criar menu de jogos com 2048 + jogo novo de aprendizagem de teclas com som e exibicao na tela.
+- Implementado: menu em `/`, 2048 movido para `/2048` e jogo "Aprender Teclas" em `/aprender-teclas` com teclado fisico + botoes touch.

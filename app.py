@@ -32,6 +32,16 @@ def pagina_inicial():
     return render_template("index.html")
 
 
+@app.route("/2048")
+def jogo_2048():
+    return render_template("game_2048.html")
+
+
+@app.route("/aprender-teclas")
+def jogo_aprender_teclas():
+    return render_template("learn_keys.html")
+
+
 @app.route("/health")
 def health():
     return "ok", 200

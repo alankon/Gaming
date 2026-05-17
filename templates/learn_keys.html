@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>alankon Gaming | Aprender Teclas</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='learn_keys.css') }}">
+</head>
+<body>
+  <main class="keys-shell">
+    <header class="keys-header">
+      <a class="back-link" href="{{ url_for('pagina_inicial') }}">Voltar ao menu</a>
+      <h1>Aprender Teclas</h1>
+      <p>Aperte letras e numeros para ouvir e fixar.</p>
+    </header>
+
+    <section class="live-panel">
+      <div class="last-key" id="last-key" aria-live="polite">-</div>
+      <p class="hint" id="hint-text">Pressione qualquer letra (A-Z) ou numero (0-9).</p>
+      <div class="stats">
+        <span>Total de teclas: <strong id="press-count">0</strong></span>
+        <button id="toggle-speech" class="speech-btn" type="button">Voz: ligada</button>
+      </div>
+    </section>
+
+    <section class="keyboard-zone">
+      <h2>Teclado touch</h2>
+      <div id="touch-keys" class="touch-keys" aria-label="Teclado virtual"></div>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='learn_keys.js') }}"></script>
+</body>
+</html>

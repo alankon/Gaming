@@ -1,0 +1,87 @@
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(20, 184, 166, 0.2), transparent 34%),
+    radial-gradient(circle at 80% 100%, rgba(249, 115, 22, 0.2), transparent 35%),
+    linear-gradient(180deg, #030712 0%, #0f172a 60%, #111827 100%);
+  color: #e5eefb;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.menu-shell {
+  width: min(980px, 100%);
+}
+
+.hero h1 {
+  margin: 8px 0 0;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+}
+
+.tag {
+  margin: 0;
+  color: #67e8f9;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 10px 0 24px;
+  color: #9fb2cb;
+  font-size: 1.1rem;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.game-card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.game-card h2 {
+  margin: 0 0 10px;
+}
+
+.game-card p {
+  margin: 0 0 18px;
+  color: #aac0d8;
+  line-height: 1.6;
+}
+
+.play-btn {
+  display: inline-block;
+  text-decoration: none;
+  background: #22c55e;
+  color: #07111f;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 10px 18px;
+}
+
+@media (max-width: 760px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+}
