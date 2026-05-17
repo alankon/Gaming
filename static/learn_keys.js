@@ -23,7 +23,9 @@
     dragon: "/static/sounds/big-cat-roar-public-domain.ogg",
     bear: "/static/sounds/bear-growl.ogg",
     panda: "/static/sounds/panda-twittering.ogg",
-    zebra: "/static/sounds/zebra-barking.ogg"
+    zebra: "/static/sounds/zebra-barking.ogg",
+    giraffe: "/static/sounds/giraffe-grunt.oga",
+    balloon: "/static/sounds/balloon-pop.ogg"
   };
   const PUBLIC_OVERLAYS = new Set([]);
   const publicSoundCache = new Map();
@@ -36,11 +38,11 @@
     C: { emoji: "🐶", label: "C de cachorro", sound: "woof" },
     D: { emoji: "🐉", label: "D de dragao", sound: "dragon" },
     E: { emoji: "🐘", label: "E de elefante", sound: "trumpet" },
-    F: { emoji: "🧚", label: "F de fada", sound: "magic" },
+    F: { emoji: "🧚‍♀️", label: "F de fada", sound: "magic" },
     G: { emoji: "🐱", label: "G de gato", sound: "meow" },
     H: { emoji: "🦛", label: "H de hipopotamo", sound: "plop" },
     I: { emoji: "🧁", label: "I de cupcake", sound: "ding" },
-    J: { emoji: "🦒", label: "J de jirafa", sound: "boing" },
+    J: { emoji: "🦒", label: "J de jirafa", sound: "giraffe" },
     K: { emoji: "🪁", label: "K de pipa colorida", sound: "wind" },
     L: { emoji: "🦁", label: "L de leao", sound: "roar" },
     M: { emoji: "🐒", label: "M de macaquinho", sound: "jump" },
@@ -60,7 +62,7 @@
     0: { emoji: "⚽", label: "Zero de bola", sound: "bounce" },
     1: { emoji: "☀️", label: "Um sol brilhante", sound: "ding" },
     2: { emoji: "🦆", label: "Dois patinhos", sound: "quack" },
-    3: { emoji: "🎈", label: "Tres baloes", sound: "pop" },
+    3: { emoji: "🎈", label: "Tres baloes", sound: "balloon" },
     4: { emoji: "🚗", label: "Quatro rodas de carrinho", sound: "vroom" },
     5: { emoji: "🖐️", label: "Cinco dedinhos", sound: "tap" },
     6: { emoji: "🐞", label: "Seis de joaninha", sound: "buzz" },

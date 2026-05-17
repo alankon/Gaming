@@ -334,27 +334,107 @@ body {
 
 @media (max-width: 800px) {
   body {
-    padding: 10px;
+    padding: 8px;
   }
 
   .keys-shell {
-    min-height: calc(100vh - 20px);
-    grid-template-rows: auto minmax(330px, 1fr) auto;
+    min-height: calc(100vh - 16px);
+    grid-template-rows: auto minmax(280px, 1fr) auto;
+    gap: 8px;
   }
 
   .keys-header h1 {
-    font-size: 1.55rem;
+    font-size: 1.45rem;
   }
 
   .keys-header p {
+    font-size: 0.85rem;
+    margin-top: -4px;
+  }
+
+  .fun-card {
+    min-height: 260px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .gif-stage {
+    height: clamp(140px, 28vh, 260px);
+    min-height: 140px;
+  }
+
+  .gif-character {
+    font-size: clamp(5rem, 18vh, 10rem);
+  }
+
+  .gif-shadow {
+    bottom: 5%;
+    width: min(220px, 48vw);
+    height: 18px;
+  }
+
+  .touch-keys {
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .key-btn {
+    min-height: 38px;
+    border-radius: 8px;
     font-size: 0.95rem;
+  }
+
+  .fun-label {
+    font-size: 1.05rem;
+    padding: 6px 14px;
+  }
+}
+
+@media (max-width: 500px) {
+  .keys-header {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .keys-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .keys-header p {
+    display: none; /* Hide helper text on very small phone screens to save precious space */
   }
 
   .touch-keys {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 5px;
   }
 
-  .fun-label {
-    font-size: 1rem;
+  .key-btn {
+    min-height: 34px;
+    font-size: 0.88rem;
+  }
+
+  .fun-card {
+    min-height: 220px;
+    padding: 10px;
+  }
+
+  .gif-stage {
+    height: clamp(120px, 24vh, 200px);
+    min-height: 120px;
+  }
+
+  .gif-character {
+    font-size: clamp(4.5rem, 15vh, 8rem);
+  }
+
+  .key-badge {
+    width: 44px;
+    height: 44px;
+    font-size: 1.2rem;
+    left: 12px;
+    top: 12px;
   }
 }
+
