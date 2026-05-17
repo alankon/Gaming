@@ -15,14 +15,14 @@
     buzz: "/static/sounds/bee-buzz-public-domain.ogg",
     meow: "/static/sounds/cat-meow-public-domain.mp3",
     woof: "/static/sounds/dog-bark-wikimedia.ogg",
-    jump: "/static/sounds/howler-monkey-cc-by.ogg",
+    jump: "/static/sounds/cute-monkey-chatter.mp3",
     trumpet: "/static/sounds/elephant-trumpet-cc0.ogg",
     ribbit: "/static/sounds/frog-croak-open.oga",
     tiger: "/static/sounds/big-cat-roar-public-domain.ogg",
     roar: "/static/sounds/big-cat-roar-public-domain.ogg",
     dragon: "/static/sounds/big-cat-roar-public-domain.ogg"
   };
-  const PUBLIC_OVERLAYS = new Set(["dragon", "tiger", "roar", "trumpet"]);
+  const PUBLIC_OVERLAYS = new Set([]);
   const publicSoundCache = new Map();
   const activeSoundNodes = new Set();
   let activePublicAudio = null;
@@ -145,7 +145,11 @@
     try {
       activePublicAudio = audio;
       audio.pause();
-      audio.currentTime = 0;
+      if (kind === "buzz") {
+        audio.currentTime = 1.0;
+      } else {
+        audio.currentTime = 0;
+      }
       const playPromise = audio.play();
       state.audioReady = true;
       state.audioState = "playing-public-file";
