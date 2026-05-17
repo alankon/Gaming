@@ -6,10 +6,21 @@ import threading
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 
 csrf = CSRFProtect(app)
 PID_FILE = os.path.join(os.path.dirname(__file__), ".gaming-server.pid")
 PORT_FILE = os.path.join(os.path.dirname(__file__), ".gaming-server.port")
+CACHELESS_ROUTES = {"/aprender-teclas"}
+
+
+@app.after_request
+def add_no_cache_headers(response):
+    if request.path.startswith("/static/") or request.path in CACHELESS_ROUTES:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 
 def _is_local_request():

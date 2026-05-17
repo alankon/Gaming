@@ -7,6 +7,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
+  const SOUND_ENGINE_VERSION = "animal-sounds-v2";
   const buttons = new Map();
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelhinha", sound: "buzz" },
@@ -126,26 +127,24 @@
 
   function playCuteSound(kind) {
     if (!audioCtx) return;
-    try {
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
-      const t = nowTime();
+    const play = () => {
+      const t = nowTime() + 0.015;
       const sounds = {
         meow: () => {
-          addSlide(820, 470, t, 0.22, "triangle", 0.15);
-          addSlide(620, 980, t + 0.18, 0.24, "sine", 0.12);
+          addSlide(980, 430, t, 0.28, "sawtooth", 0.22);
+          addSlide(760, 1120, t + 0.22, 0.32, "triangle", 0.18);
+          addTone(1320, t + 0.5, 0.08, "sine", 0.08);
         },
         woof: () => {
-          addNoise(t, 0.08, 0.08, 260);
-          addTone(150, t, 0.12, "square", 0.12);
-          addNoise(t + 0.15, 0.09, 0.07, 220);
-          addTone(130, t + 0.15, 0.13, "square", 0.1);
+          addNoise(t, 0.13, 0.16, 230);
+          addTone(135, t, 0.16, "square", 0.18);
+          addNoise(t + 0.19, 0.14, 0.14, 190);
+          addTone(110, t + 0.19, 0.18, "square", 0.16);
         },
         dragon: () => {
-          addNoise(t, 0.42, 0.09, 180);
-          addSlide(150, 48, t, 0.42, "sawtooth", 0.1);
-          addTone(72, t + 0.1, 0.24, "triangle", 0.08);
+          addNoise(t, 0.62, 0.18, 155);
+          addSlide(175, 42, t, 0.62, "sawtooth", 0.2);
+          addTone(66, t + 0.14, 0.38, "square", 0.12);
         },
         buzz: () => {
           addTone(520, t, 0.08, "sawtooth", 0.08);
@@ -160,17 +159,19 @@
           addTone(920, t + 0.13, 0.14, "triangle", 0.1);
         },
         trumpet: () => {
-          addSlide(240, 540, t, 0.24, "sawtooth", 0.1);
-          addSlide(420, 260, t + 0.22, 0.18, "sawtooth", 0.08);
+          addSlide(210, 620, t, 0.34, "sawtooth", 0.18);
+          addSlide(620, 260, t + 0.3, 0.26, "sawtooth", 0.14);
         },
         roar: () => {
-          addNoise(t, 0.4, 0.1, 170);
-          addSlide(190, 82, t, 0.4, "triangle", 0.12);
+          addNoise(t, 0.54, 0.18, 165);
+          addSlide(210, 74, t, 0.52, "sawtooth", 0.18);
+          addTone(92, t + 0.18, 0.22, "triangle", 0.1);
         },
         tiger: () => {
-          addNoise(t, 0.36, 0.1, 210);
-          addSlide(220, 95, t, 0.34, "sawtooth", 0.11);
-          addTone(120, t + 0.18, 0.14, "triangle", 0.08);
+          addNoise(t, 0.48, 0.18, 230);
+          addSlide(260, 86, t, 0.48, "sawtooth", 0.19);
+          addNoise(t + 0.2, 0.18, 0.1, 420);
+          addTone(128, t + 0.24, 0.2, "triangle", 0.11);
         },
         ribbit: () => {
           addSlide(260, 520, t, 0.12, "square", 0.08);
@@ -191,8 +192,8 @@
           addSlide(320, 220, t + 0.15, 0.1, "sine", 0.08);
         },
         quack: () => {
-          addSlide(620, 330, t, 0.14, "sawtooth", 0.08);
-          addSlide(520, 300, t + 0.12, 0.12, "sawtooth", 0.07);
+          addSlide(780, 330, t, 0.16, "sawtooth", 0.14);
+          addSlide(680, 290, t + 0.14, 0.16, "sawtooth", 0.12);
         },
         vroom: () => addSlide(90, 180, t, 0.34, "sawtooth", 0.08),
         wind: () => addSlide(740, 520, t, 0.28, "sine", 0.08),
@@ -208,14 +209,22 @@
         ding: () => addTone(920, t, 0.22, "sine", 0.1),
         tap: () => addTone(520, t, 0.08, "triangle", 0.09),
         donkey: () => {
-          addSlide(360, 170, t, 0.22, "sawtooth", 0.11);
-          addNoise(t, 0.18, 0.055, 300);
-          addSlide(170, 430, t + 0.24, 0.32, "sawtooth", 0.12);
-          addNoise(t + 0.24, 0.28, 0.055, 360);
+          addNoise(t, 0.24, 0.12, 310);
+          addSlide(420, 145, t, 0.3, "sawtooth", 0.18);
+          addTone(145, t + 0.28, 0.12, "square", 0.1);
+          addNoise(t + 0.34, 0.34, 0.14, 360);
+          addSlide(155, 520, t + 0.34, 0.42, "sawtooth", 0.19);
         }
       };
       (sounds[kind] || sounds.ding)();
       state.audioReady = true;
+    };
+    try {
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().then(play).catch(() => {});
+        return;
+      }
+      play();
     } catch {}
   }
 
@@ -312,6 +321,7 @@
       last_sound: state.lastSound,
       press_count: state.pressCount,
       audio_ready: state.audioReady,
+      sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
       note: "Aceita qualquer tecla do teclado fisico; A-Z e 0-9 tambem funcionam por botoes touch. Usa WebAudio procedural, sem voz e sem arquivos de audio."
     });

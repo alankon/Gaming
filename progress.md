@@ -38,3 +38,5 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Nova solicitacao: qualquer tecla fora de A-Z/0-9 deve chamar um burrinho animado com som proprio; sons dos itens/animais devem ficar mais parecidos com a imagem exibida.
 - Em andamento: fallback de teclas especiais implementado para burrinho, T virou tigre, sons de gato/cachorro/rugidos/pato/burro refinados com WebAudio procedural.
 - Validado com Playwright: loop oficial confirmou espaco -> burrinho (`last_sound: donkey`) e teste extra `output/learn-keys-special-donkey.png` confirmou virgula -> burrinho; G/C/T foram acionados antes para cobrir miado, latido e rugido de tigre.
+- Ajuste apos feedback: sons pareciam antigos no navegador; adicionado cache busting `?v=sound-v2`, headers no-cache para `/aprender-teclas` e `/static`, `AudioContext.resume()` agora agenda sons apos liberar audio, e sons de gato/cachorro/rugidos/burro ficaram mais fortes.
+- Validado com Playwright: `output/learn-keys-sound-v2.png` confirmou script `/static/learn_keys.js?v=sound-v2` e estado `sound_engine_version: animal-sounds-v2`.
