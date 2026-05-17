@@ -8,8 +8,16 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v4-buffered";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v5-public-assets";
   const buttons = new Map();
+  const PUBLIC_SOUNDS = {
+    meow: "/static/sounds/cat-meow-public-domain.mp3",
+    woof: "/static/sounds/dog-bark-wikimedia.ogg",
+    tiger: "/static/sounds/big-cat-roar-public-domain.ogg",
+    roar: "/static/sounds/big-cat-roar-public-domain.ogg",
+    dragon: "/static/sounds/big-cat-roar-public-domain.ogg"
+  };
+  const publicSoundCache = new Map();
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelhinha", sound: "buzz" },
     B: { emoji: "🍼", label: "B de bebe feliz", sound: "baby" },
@@ -54,6 +62,7 @@
     lastKey: "?",
     lastItem: "estrelinha",
     lastSound: "sparkle",
+    lastSoundSource: "procedural",
     audioReady: false,
     audioState: "waiting"
   };
@@ -84,6 +93,38 @@
     compressor.release.value = 0.18;
     masterGain.connect(compressor);
     compressor.connect(audioCtx.destination);
+  }
+
+  function publicAudioFor(kind) {
+    const src = PUBLIC_SOUNDS[kind];
+    if (!src) return null;
+    if (!publicSoundCache.has(kind)) {
+      const audio = new Audio(src);
+      audio.preload = "auto";
+      audio.volume = kind === "woof" ? 0.9 : 0.82;
+      publicSoundCache.set(kind, audio);
+    }
+    return publicSoundCache.get(kind);
+  }
+
+  function playPublicSound(kind) {
+    const audio = publicAudioFor(kind);
+    if (!audio) return false;
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      const playPromise = audio.play();
+      state.audioReady = true;
+      state.audioState = "playing-public-file";
+      state.lastSoundSource = "public-file";
+      audioStatusEl.textContent = `Som publico: ${kind}`;
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => playGeneratedSound(kind));
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function nowTime() {
@@ -285,7 +326,7 @@
     return true;
   }
 
-  function playCuteSound(kind) {
+  function playGeneratedSound(kind) {
     if (!audioCtx) {
       state.audioState = "unavailable";
       audioStatusEl.textContent = "Som indisponivel";
@@ -296,6 +337,7 @@
       if (playBufferSound(kind)) {
         state.audioReady = true;
         state.audioState = audioCtx.state;
+        state.lastSoundSource = "procedural-buffer";
         audioStatusEl.textContent = `Som ativo: ${kind}`;
         return;
       }
@@ -392,6 +434,7 @@
       (sounds[kind] || sounds.ding)();
       state.audioReady = true;
       state.audioState = audioCtx.state;
+      state.lastSoundSource = "procedural-oscillator";
       audioStatusEl.textContent = `Som ativo: ${kind}`;
     };
     try {
@@ -403,6 +446,11 @@
       }
       play();
     } catch {}
+  }
+
+  function playCuteSound(kind) {
+    if (playPublicSound(kind)) return;
+    playGeneratedSound(kind);
   }
 
   function flashButton(char) {
@@ -419,7 +467,7 @@
   }
 
   function registerChar(char, displayKey) {
-    const fun = char === "STAR:space" || char === "STAR:enter" ? STAR_FUN : FUN_MAP[char] || FALLBACK_FUN;
+    const fun = char.startsWith("STAR:") ? STAR_FUN : char.startsWith("ARROW:") ? FALLBACK_FUN : FUN_MAP[char] || STAR_FUN;
     state.lastKey = char;
     state.lastItem = fun.fallback || fun.star ? `${fun.label}: tecla ${displayKey}` : fun.label;
     state.lastSound = fun.sound;
@@ -427,9 +475,9 @@
     lastKeyEl.textContent = fun.fallback ? "!" : fun.star ? "★" : char;
     pressCountEl.textContent = String(state.pressCount);
     hintTextEl.textContent = fun.star
-      ? "Espaco e Enter voltam para a estrelinha inicial."
+      ? "Tecla nao mapeada voltou para a estrelinha inicial."
       : fun.fallback
-      ? "Essa tecla chamou o burrinho surpresa."
+      ? "As setas chamaram o burrinho surpresa."
       : "Toque outra tecla para trocar o desenho animado.";
     funEmojiEl.textContent = fun.emoji;
     funLabelEl.textContent = fun.fallback || fun.star ? `${fun.label}: ${displayKey}` : fun.label;
@@ -484,7 +532,11 @@
       registerChar("STAR:enter", "enter");
       return;
     }
-    registerChar(`OTHER:${labelForOtherKey(event.key)}`, labelForOtherKey(event.key));
+    if (event.key.startsWith("Arrow")) {
+      registerChar(`ARROW:${labelForOtherKey(event.key)}`, labelForOtherKey(event.key));
+      return;
+    }
+    registerChar(`STAR:${labelForOtherKey(event.key)}`, labelForOtherKey(event.key));
   }
 
   function buildTouchKeyboard() {
@@ -506,12 +558,13 @@
       last_key: state.lastKey,
       last_item: state.lastItem,
       last_sound: state.lastSound,
+      last_sound_source: state.lastSoundSource,
       press_count: state.pressCount,
       audio_ready: state.audioReady,
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "Aceita qualquer tecla do teclado fisico; A-Z e 0-9 tambem funcionam por botoes touch. Usa WebAudio procedural, sem voz e sem arquivos de audio."
+      note: "A-Z e 0-9 usam mapeamento educativo; setas chamam o burrinho; outras teclas nao mapeadas voltam para a estrela. Sons publicos sao usados quando disponiveis com fallback procedural."
     });
   };
 
