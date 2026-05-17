@@ -28,7 +28,7 @@
     Q: { emoji: "🧀", label: "Q de queijo", sound: "pop" },
     R: { emoji: "🤖", label: "R de robo", sound: "robot" },
     S: { emoji: "🐸", label: "S de sapinho", sound: "ribbit" },
-    T: { emoji: "🐢", label: "T de tartaruga", sound: "bubble" },
+    T: { emoji: "🐯", label: "T de tigre", sound: "tiger" },
     U: { emoji: "🦄", label: "U de unicornio", sound: "magic" },
     V: { emoji: "🦊", label: "V de raposinha veloz", sound: "zip" },
     W: { emoji: "🍉", label: "W de melancia", sound: "pop" },
@@ -53,6 +53,12 @@
     lastItem: "estrelinha",
     lastSound: "sparkle",
     audioReady: false
+  };
+  const FALLBACK_FUN = {
+    emoji: "🫏",
+    label: "Burrinho curioso",
+    sound: "donkey",
+    fallback: true
   };
 
   const AudioClass = window.AudioContext || window.webkitAudioContext;
@@ -93,6 +99,31 @@
     osc.stop(start + duration + 0.04);
   }
 
+  function addNoise(start, duration, volume, filterFreq) {
+    if (!audioCtx) return;
+    const sampleRate = audioCtx.sampleRate;
+    const buffer = audioCtx.createBuffer(1, Math.ceil(sampleRate * duration), sampleRate);
+    const channel = buffer.getChannelData(0);
+    for (let i = 0; i < channel.length; i++) {
+      channel[i] = Math.random() * 2 - 1;
+    }
+    const source = audioCtx.createBufferSource();
+    const filter = audioCtx.createBiquadFilter();
+    const gain = audioCtx.createGain();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(filterFreq, start);
+    filter.Q.setValueAtTime(0.9, start);
+    gain.gain.setValueAtTime(0.001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    source.buffer = buffer;
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    source.start(start);
+    source.stop(start + duration + 0.04);
+  }
+
   function playCuteSound(kind) {
     if (!audioCtx) return;
     try {
@@ -102,16 +133,19 @@
       const t = nowTime();
       const sounds = {
         meow: () => {
-          addSlide(720, 410, t, 0.18, "triangle", 0.16);
-          addSlide(560, 820, t + 0.15, 0.18, "triangle", 0.12);
+          addSlide(820, 470, t, 0.22, "triangle", 0.15);
+          addSlide(620, 980, t + 0.18, 0.24, "sine", 0.12);
         },
         woof: () => {
-          addTone(180, t, 0.1, "square", 0.12);
-          addTone(150, t + 0.13, 0.12, "square", 0.1);
+          addNoise(t, 0.08, 0.08, 260);
+          addTone(150, t, 0.12, "square", 0.12);
+          addNoise(t + 0.15, 0.09, 0.07, 220);
+          addTone(130, t + 0.15, 0.13, "square", 0.1);
         },
         dragon: () => {
-          addSlide(140, 52, t, 0.34, "sawtooth", 0.09);
-          addTone(90, t + 0.08, 0.18, "triangle", 0.08);
+          addNoise(t, 0.42, 0.09, 180);
+          addSlide(150, 48, t, 0.42, "sawtooth", 0.1);
+          addTone(72, t + 0.1, 0.24, "triangle", 0.08);
         },
         buzz: () => {
           addTone(520, t, 0.08, "sawtooth", 0.08);
@@ -125,8 +159,19 @@
           addTone(760, t, 0.12, "triangle", 0.11);
           addTone(920, t + 0.13, 0.14, "triangle", 0.1);
         },
-        trumpet: () => addSlide(220, 440, t, 0.32, "sawtooth", 0.1),
-        roar: () => addSlide(180, 80, t, 0.36, "triangle", 0.12),
+        trumpet: () => {
+          addSlide(240, 540, t, 0.24, "sawtooth", 0.1);
+          addSlide(420, 260, t + 0.22, 0.18, "sawtooth", 0.08);
+        },
+        roar: () => {
+          addNoise(t, 0.4, 0.1, 170);
+          addSlide(190, 82, t, 0.4, "triangle", 0.12);
+        },
+        tiger: () => {
+          addNoise(t, 0.36, 0.1, 210);
+          addSlide(220, 95, t, 0.34, "sawtooth", 0.11);
+          addTone(120, t + 0.18, 0.14, "triangle", 0.08);
+        },
         ribbit: () => {
           addSlide(260, 520, t, 0.12, "square", 0.08);
           addSlide(220, 480, t + 0.16, 0.12, "square", 0.08);
@@ -145,7 +190,10 @@
           addSlide(380, 180, t, 0.14, "sine", 0.11);
           addSlide(320, 220, t + 0.15, 0.1, "sine", 0.08);
         },
-        quack: () => addSlide(520, 300, t, 0.18, "sawtooth", 0.08),
+        quack: () => {
+          addSlide(620, 330, t, 0.14, "sawtooth", 0.08);
+          addSlide(520, 300, t + 0.12, 0.12, "sawtooth", 0.07);
+        },
         vroom: () => addSlide(90, 180, t, 0.34, "sawtooth", 0.08),
         wind: () => addSlide(740, 520, t, 0.28, "sine", 0.08),
         zip: () => addSlide(900, 360, t, 0.16, "sine", 0.1),
@@ -158,7 +206,13 @@
         plop: () => addSlide(250, 120, t, 0.18, "sine", 0.1),
         pop: () => addSlide(540, 980, t, 0.09, "triangle", 0.11),
         ding: () => addTone(920, t, 0.22, "sine", 0.1),
-        tap: () => addTone(520, t, 0.08, "triangle", 0.09)
+        tap: () => addTone(520, t, 0.08, "triangle", 0.09),
+        donkey: () => {
+          addSlide(360, 170, t, 0.22, "sawtooth", 0.11);
+          addNoise(t, 0.18, 0.055, 300);
+          addSlide(170, 430, t + 0.24, 0.32, "sawtooth", 0.12);
+          addNoise(t + 0.24, 0.28, 0.055, 360);
+        }
       };
       (sounds[kind] || sounds.ding)();
       state.audioReady = true;
@@ -178,33 +232,63 @@
     funCardEl.classList.add("pop");
   }
 
-  function registerChar(char) {
-    const fun = FUN_MAP[char] || { emoji: "🌟", label: `Tecla ${char}`, sound: "ding" };
+  function registerChar(char, displayKey) {
+    const fun = FUN_MAP[char] || FALLBACK_FUN;
     state.lastKey = char;
-    state.lastItem = fun.label;
+    state.lastItem = fun.fallback ? `${fun.label}: tecla ${displayKey}` : fun.label;
     state.lastSound = fun.sound;
     state.pressCount += 1;
-    lastKeyEl.textContent = char;
+    lastKeyEl.textContent = fun.fallback ? "!" : char;
     pressCountEl.textContent = String(state.pressCount);
-    hintTextEl.textContent = "Toque outra tecla para trocar o desenho animado.";
+    hintTextEl.textContent = fun.fallback
+      ? "Essa tecla chamou o burrinho surpresa."
+      : "Toque outra tecla para trocar o desenho animado.";
     funEmojiEl.textContent = fun.emoji;
-    funLabelEl.textContent = fun.label;
+    funLabelEl.textContent = fun.fallback ? `${fun.label}: ${displayKey}` : fun.label;
+    funCardEl.classList.toggle("silly", Boolean(fun.fallback));
     flashButton(char);
     replayAnimation();
     playCuteSound(fun.sound);
   }
 
   function normalizeKey(key) {
-    if (!key || key.length !== 1) return "";
+    if (!key) return "";
     const upper = key.toUpperCase();
     return ALLOWED.includes(upper) ? upper : "";
   }
 
+  function labelForOtherKey(key) {
+    const labels = {
+      " ": "espaco",
+      Spacebar: "espaco",
+      Enter: "enter",
+      Tab: "tab",
+      Escape: "esc",
+      Backspace: "backspace",
+      Delete: "delete",
+      ArrowUp: "seta cima",
+      ArrowDown: "seta baixo",
+      ArrowLeft: "seta esquerda",
+      ArrowRight: "seta direita",
+      ",": "virgula",
+      ".": "ponto",
+      ";": "ponto e virgula",
+      ":": "dois pontos",
+      "-": "traco",
+      "_": "underline"
+    };
+    return labels[key] || key;
+  }
+
   function onKeyDown(event) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
     const normalized = normalizeKey(event.key);
-    if (!normalized) return;
     event.preventDefault();
-    registerChar(normalized);
+    if (normalized) {
+      registerChar(normalized, normalized);
+      return;
+    }
+    registerChar(`OTHER:${labelForOtherKey(event.key)}`, labelForOtherKey(event.key));
   }
 
   function buildTouchKeyboard() {
@@ -229,7 +313,7 @@
       press_count: state.pressCount,
       audio_ready: state.audioReady,
       animated_visual: true,
-      note: "Aceita A-Z e 0-9 por teclado fisico ou botoes touch; usa WebAudio procedural, sem voz e sem arquivos de audio."
+      note: "Aceita qualquer tecla do teclado fisico; A-Z e 0-9 tambem funcionam por botoes touch. Usa WebAudio procedural, sem voz e sem arquivos de audio."
     });
   };
 

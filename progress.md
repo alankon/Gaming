@@ -35,3 +35,6 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Nova solicitacao: usar melhor o espaco do jogo de teclas com imagens dinamicas/animadas para criancas, sem voz/letras gigantes, com barulhos fofos de itens/animais.
 - Em andamento: painel principal redesenhado como palco animado, letra reduzida para badge, voz removida e sons trocados por WebAudio procedural sem arquivos de audio.
 - Validado com Playwright: loop oficial em `output/web-game` passou com A/B e teste extra `output/learn-keys-gcd.png` confirmou G gato, C cachorro e D dragao com estado `last_sound: dragon`.
+- Nova solicitacao: qualquer tecla fora de A-Z/0-9 deve chamar um burrinho animado com som proprio; sons dos itens/animais devem ficar mais parecidos com a imagem exibida.
+- Em andamento: fallback de teclas especiais implementado para burrinho, T virou tigre, sons de gato/cachorro/rugidos/pato/burro refinados com WebAudio procedural.
+- Validado com Playwright: loop oficial confirmou espaco -> burrinho (`last_sound: donkey`) e teste extra `output/learn-keys-special-donkey.png` confirmou virgula -> burrinho; G/C/T foram acionados antes para cobrir miado, latido e rugido de tigre.

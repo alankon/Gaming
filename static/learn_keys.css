@@ -120,6 +120,7 @@ body {
   color: #25344a;
   font-size: 1.45rem;
   font-weight: 900;
+  text-transform: uppercase;
   box-shadow: 0 10px 24px rgba(32, 48, 71, 0.14);
 }
 
@@ -139,6 +140,14 @@ body {
   filter: drop-shadow(0 18px 0 rgba(32, 48, 71, 0.08));
   animation: gif-bounce 1.05s ease-in-out infinite;
   transform-origin: center bottom;
+}
+
+.fun-card.silly .gif-character {
+  animation: donkey-wiggle 0.72s ease-in-out infinite;
+}
+
+.fun-card.silly .fun-label {
+  background: rgba(255, 241, 166, 0.9);
 }
 
 .gif-shadow {
@@ -274,6 +283,21 @@ body {
 
   100% {
     transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
+@keyframes donkey-wiggle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-7deg) scale(1);
+  }
+
+  35% {
+    transform: translateY(-16px) rotate(7deg) scale(1.04);
+  }
+
+  70% {
+    transform: translateY(-4px) rotate(-3deg) scale(0.98);
   }
 }
 
