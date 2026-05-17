@@ -11,19 +11,24 @@
     <header class="keys-header">
       <a class="back-link" href="{{ url_for('pagina_inicial') }}">Voltar ao menu</a>
       <h1>Aprender Teclas</h1>
-      <p>Aperte letras e numeros para ouvir e fixar.</p>
+      <p>Aperte letras e numeros para ver a animacao e o som fofinho.</p>
     </header>
 
     <section class="live-panel">
-      <div class="last-key" id="last-key" aria-live="polite">-</div>
-      <p class="hint" id="hint-text">Pressione qualquer letra (A-Z) ou numero (0-9).</p>
       <div class="fun-card" aria-live="polite">
-        <div class="fun-emoji" id="fun-emoji">🌟</div>
-        <p class="fun-label" id="fun-label">Aperte uma tecla para aparecer a imagem.</p>
+        <div class="key-badge" id="last-key">?</div>
+        <div class="gif-stage" id="gif-stage">
+          <div class="gif-shadow"></div>
+          <div class="gif-character" id="fun-emoji">🌟</div>
+          <div class="spark spark-a"></div>
+          <div class="spark spark-b"></div>
+          <div class="spark spark-c"></div>
+        </div>
+        <p class="fun-label" id="fun-label">Aperte uma tecla para aparecer um amiguinho animado.</p>
+        <p class="hint" id="hint-text">Letras A-Z e numeros 0-9 funcionam no teclado ou no toque.</p>
       </div>
       <div class="stats">
         <span>Total de teclas: <strong id="press-count">0</strong></span>
-        <button id="toggle-speech" class="speech-btn" type="button">Voz: ligada</button>
       </div>
     </section>
 

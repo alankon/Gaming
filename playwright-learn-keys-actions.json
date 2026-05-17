@@ -4,7 +4,6 @@
     { "buttons": [], "frames": 4 },
     { "buttons": ["b"], "frames": 4 },
     { "buttons": [], "frames": 4 },
-    { "buttons": ["enter"], "frames": 3 },
     { "buttons": [], "frames": 4 }
   ]
 }

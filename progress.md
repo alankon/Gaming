@@ -32,3 +32,6 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Validacao: `./server.sh free-port 5000` e `.\\server.ps1 free-port 5000` executando com sucesso.
 - Nova solicitacao: criar menu de jogos com 2048 + jogo novo de aprendizagem de teclas com som e exibicao na tela.
 - Implementado: menu em `/`, 2048 movido para `/2048` e jogo "Aprender Teclas" em `/aprender-teclas` com teclado fisico + botoes touch.
+- Nova solicitacao: usar melhor o espaco do jogo de teclas com imagens dinamicas/animadas para criancas, sem voz/letras gigantes, com barulhos fofos de itens/animais.
+- Em andamento: painel principal redesenhado como palco animado, letra reduzida para badge, voz removida e sons trocados por WebAudio procedural sem arquivos de audio.
+- Validado com Playwright: loop oficial em `output/web-game` passou com A/B e teste extra `output/learn-keys-gcd.png` confirmou G gato, C cachorro e D dragao com estado `last_sound: dragon`.
