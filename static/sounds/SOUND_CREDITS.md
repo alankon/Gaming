@@ -8,5 +8,7 @@ Public/open sounds used by Aprender Teclas.
 - `elephant-trumpet-cc0.ogg`: "Elephant voice - trumpeting.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg. License stated on source page: CC0 1.0.
 - `frog-croak-open.oga`: "Single Frog Croak.oga" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Single_Frog_Croak.oga. License stated on source page: CC BY-SA 4.0.
 - `howler-monkey-cc-by.ogg`: "Howler monkey.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Howler_monkey.ogg. License stated on source page: CC BY 3.0.
+- `baby-laugh-cc-by.ogg`: "Baby Laugh.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Baby_Laugh.ogg. License stated on source page: CC BY 3.0.
+- `bee-buzz-public-domain.ogg`: "Bombus buzz.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Bombus_buzz.ogg. License stated on source page: Public Domain.
 
 The game keeps procedural WebAudio fallbacks for browsers that cannot load or play one of these files.

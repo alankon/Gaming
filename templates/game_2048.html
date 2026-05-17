@@ -8,6 +8,10 @@
 </head>
 <body>
   <main class="shell">
+    <div class="header-container">
+      <a class="back-link" href="{{ url_for('pagina_inicial') }}">← Voltar ao Menu</a>
+      <button id="toggle-sound" class="sound-btn" type="button" aria-pressed="true">Sons: Ligados 🔊</button>
+    </div>
     <canvas
       id="game"
       width="920"

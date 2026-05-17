@@ -27,6 +27,139 @@
     4096: { label: "legend", color: "#0c7a62", ink: "#effff8" }
   };
 
+  class SoundEffects {
+    constructor() {
+      this.ctx = null;
+      this.enabled = true;
+    }
+    init() {
+      if (this.ctx) {
+        if (this.ctx.state === "suspended") {
+          this.ctx.resume().catch(() => {});
+        }
+        return;
+      }
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
+      }
+    }
+    playMove() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+      
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.1);
+      
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      
+      osc.start(now);
+      osc.stop(now + 0.1);
+    }
+    playMerge() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+      
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(392.00, now); // G4
+      osc.frequency.setValueAtTime(523.25, now + 0.06); // C5
+      
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      
+      osc.start(now);
+      osc.stop(now + 0.16);
+    }
+    playAchievement() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+      
+      const now = this.ctx.currentTime;
+      const playNote = (freq, start, duration, type = "sine") => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.1, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+        osc.start(start);
+        osc.stop(start + duration);
+      };
+      
+      // Joyful major scale arpeggio
+      playNote(261.63, now, 0.12); // C4
+      playNote(329.63, now + 0.08, 0.12); // E4
+      playNote(392.00, now + 0.16, 0.12); // G4
+      playNote(523.25, now + 0.24, 0.35, "triangle"); // C5
+    }
+    playGameOver() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+      
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(150, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.5);
+      
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      
+      osc.start(now);
+      osc.stop(now + 0.5);
+    }
+    playGameWon() {
+      if (!this.enabled) return;
+      this.init();
+      if (!this.ctx) return;
+      
+      const now = this.ctx.currentTime;
+      const playNote = (freq, start, duration) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.12, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+        osc.start(start);
+        osc.stop(start + duration);
+      };
+      
+      const theme = [392.00, 523.25, 659.25, 783.99]; // G4, C5, E5, G5
+      theme.forEach((freq, idx) => {
+        playNote(freq, now + idx * 0.15, idx === 3 ? 0.65 : 0.25);
+      });
+    }
+  }
+
+  const sounds = new SoundEffects();
+
   const state = {
     mode: "menu",
     board: createEmptyBoard(),
@@ -39,7 +172,12 @@
     justMerged: [],
     animation: null,
     pointer: null,
-    suppressClick: false
+    suppressClick: false,
+    unlocked: new Set(),
+    particles: [],
+    bgParticles: [],
+    scoreFloats: [],
+    banner: null
   };
 
   function loadBest() {
@@ -108,6 +246,12 @@
     state.justSpawned = [];
     state.justMerged = [];
     state.animation = null;
+    state.unlocked = new Set();
+    state.particles = [];
+    state.scoreFloats = [];
+    state.banner = null;
+    initBgParticles();
+
     const first = addRandomTile(state.board);
     const second = addRandomTile(state.board);
     state.justSpawned = [first, second].filter(Boolean).map((tile) => ({ ...tile, life: 0.7 }));
@@ -175,7 +319,7 @@
             toCol: destination.col,
             value: next.value
           });
-          merged.push({ row: destination.row, col: destination.col, life: 1 });
+          merged.push({ row: destination.row, col: destination.col, value: mergedValue, life: 1 });
           gained += mergedValue;
           if (
             current.row !== destination.row ||
@@ -246,6 +390,19 @@
     state.message = `Movimento ${direction} confirmado`;
     state.justSpawned = [];
     state.justMerged = [];
+
+    if (result.gained > 0) {
+      state.scoreFloats.push({
+        text: `+${result.gained}`,
+        x: 584 + 104 / 2,
+        y: 48 + 15,
+        life: 1.0
+      });
+      sounds.playMerge();
+    } else {
+      sounds.playMove();
+    }
+
     state.animation = {
       elapsed: 0,
       duration: ANIMATION_DURATION,
@@ -265,18 +422,31 @@
       state.justSpawned = [{ ...state.animation.spawned, life: 0.7 }];
     }
     state.justMerged = state.animation.merged.map((tile) => ({ ...tile, life: tile.life }));
+
+    // Check for achievements and trigger fireworks!
+    state.animation.merged.forEach((tile) => {
+      if (tile.value && !state.unlocked.has(tile.value)) {
+        state.unlocked.add(tile.value);
+        triggerFireworks(tile.row, tile.col, tile.value);
+        sounds.playAchievement();
+        showBanner(`CONQUISTA: MERGE ${tile.value} - ${getTileTheme(tile.value).label.toUpperCase()}!`);
+      }
+    });
+
     state.animation = null;
 
     const maxTile = Math.max(...state.board.flat());
-    if (maxTile >= 2048) {
+    if (maxTile >= 2048 && state.mode !== "won") {
       state.mode = "won";
       state.message = "alankon Gaming desbloqueado. Voce chegou no 2048.";
+      sounds.playGameWon();
       return;
     }
 
     if (!canMove(state.board)) {
       state.mode = "lost";
       state.message = "Run encerrada. Bata seu best e tente outra vez.";
+      sounds.playGameOver();
     }
   }
 
@@ -287,6 +457,40 @@
     state.justMerged = state.justMerged
       .map((item) => ({ ...item, life: item.life - dt * 2.4 }))
       .filter((item) => item.life > 0);
+
+    if (state.bgParticles) {
+      state.bgParticles.forEach((p) => {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        if (p.y < 0) {
+          p.y = BASE_SIZE;
+          p.x = Math.random() * BASE_SIZE;
+        }
+      });
+    }
+
+    state.particles.forEach((p) => {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += p.gravity * dt;
+      p.alpha -= p.decay * dt;
+      p.size = Math.max(0.1, p.size * (1 - dt * 0.5));
+    });
+    state.particles = state.particles.filter((p) => p.alpha > 0);
+
+    state.scoreFloats.forEach((f) => {
+      f.y -= dt * 45;
+      f.life -= dt * 1.2;
+    });
+    state.scoreFloats = state.scoreFloats.filter((f) => f.life > 0);
+
+    if (state.banner) {
+      state.banner.life -= dt;
+      state.banner.yOffset += dt * 28;
+      if (state.banner.life <= 0) {
+        state.banner = null;
+      }
+    }
 
     if (state.animation) {
       state.animation.elapsed += dt;
@@ -356,6 +560,19 @@
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
     }
+
+    // Draw background floating dust particles!
+    if (state.bgParticles) {
+      state.bgParticles.forEach((p) => {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = "#38bdf8";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+    }
   }
 
   function drawTile(value, row, col, pulse) {
@@ -368,7 +585,15 @@
     ctx.translate(cx, cy);
     ctx.scale(pulse, pulse);
     ctx.translate(-cx, -cy);
+
+    // Glowing shadows for premium tiles
+    if (value >= 128) {
+      ctx.shadowColor = tile.color;
+      ctx.shadowBlur = Math.min(25, value / 8);
+    }
+
     drawRoundedRect(x, y, CELL, CELL, 20, tile.color);
+    ctx.shadowBlur = 0; // Reset shadow for text
 
     ctx.fillStyle = tile.ink;
     ctx.textAlign = "center";
@@ -515,18 +740,144 @@
     ctx.fillText("Use Nova run ou aperte R para jogar de novo.", BASE_SIZE / 2, 766);
   }
 
+  function initBgParticles() {
+    state.bgParticles = [];
+    for (let i = 0; i < 15; i++) {
+      state.bgParticles.push({
+        x: Math.random() * BASE_SIZE,
+        y: Math.random() * BASE_SIZE,
+        vx: (Math.random() - 0.5) * 10,
+        vy: -5 - Math.random() * 15,
+        size: 1 + Math.random() * 3,
+        alpha: 0.05 + Math.random() * 0.1
+      });
+    }
+  }
+
+  function triggerFireworks(row, col, value) {
+    const { x, y } = getCellPosition(row, col);
+    const cx = x + CELL / 2;
+    const cy = y + CELL / 2;
+    const theme = getTileTheme(value);
+
+    for (let i = 0; i < 60; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 80 + Math.random() * 240;
+      const size = 3 + Math.random() * 5;
+      const decay = 0.5 + Math.random() * 1.0;
+
+      let color = theme.color;
+      const rand = Math.random();
+      if (rand < 0.25) {
+        color = "#ffd700";
+      } else if (rand < 0.4) {
+        color = "#ffffff";
+      } else if (rand < 0.5) {
+        color = "#00f0ff";
+      }
+
+      state.particles.push({
+        x: cx,
+        y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 60,
+        gravity: 120,
+        color: color,
+        size: size,
+        alpha: 1.0,
+        decay: decay
+      });
+    }
+  }
+
+  function showBanner(text) {
+    state.banner = {
+      text: text,
+      life: 2.2,
+      yOffset: 0
+    };
+  }
+
+  function drawParticles() {
+    state.particles.forEach((p) => {
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+  }
+
+  function drawScoreFloats() {
+    state.scoreFloats.forEach((f) => {
+      ctx.save();
+      ctx.globalAlpha = f.life;
+      ctx.fillStyle = "#facc15";
+      ctx.font = '900 24px "Trebuchet MS"';
+      ctx.textAlign = "center";
+      ctx.fillText(f.text, f.x, f.y);
+      ctx.restore();
+    });
+  }
+
+  function drawBanner() {
+    if (!state.banner) return;
+
+    ctx.save();
+
+    let alpha = 1.0;
+    if (state.banner.life < 0.5) {
+      alpha = state.banner.life / 0.5;
+    } else if (2.2 - state.banner.life < 0.3) {
+      alpha = (2.2 - state.banner.life) / 0.3;
+    }
+
+    ctx.globalAlpha = alpha;
+
+    const w = 480;
+    const h = 58;
+    const x = (BASE_SIZE - w) / 2;
+    const y = BOARD_Y - 40 - state.banner.yOffset;
+
+    ctx.shadowColor = "#facc15";
+    ctx.shadowBlur = 18;
+
+    drawRoundedRect(x, y, w, h, 16, "rgba(15, 23, 42, 0.94)");
+
+    ctx.shadowBlur = 0;
+
+    ctx.strokeStyle = "rgba(250, 204, 21, 0.7)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(x, y, w, h, 16) : ctx.rect(x, y, w, h);
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#facc15";
+    ctx.font = '900 21px "Trebuchet MS"';
+    ctx.fillText(state.banner.text, BASE_SIZE / 2, y + h / 2);
+
+    ctx.restore();
+  }
+
   function render() {
     canvas.width = BASE_SIZE;
     canvas.height = BASE_SIZE;
     drawBackground();
     drawHud();
     drawBoard();
+    drawParticles();
+    drawScoreFloats();
+    drawBanner();
     if (state.mode === "menu") drawMenuOverlay();
     drawEndRibbon();
   }
 
   function resizeCanvas() {
-    const size = Math.min(window.innerWidth - 20, window.innerHeight - 20, 860);
+    const size = Math.min(window.innerWidth - 20, window.innerHeight - 80, 860);
     canvas.style.width = `${Math.max(320, size)}px`;
     canvas.style.height = `${Math.max(320, size)}px`;
   }
@@ -579,6 +930,7 @@
   }
 
   function handlePointerDown(event) {
+    sounds.init();
     const point = toCanvasPoint(event);
     state.pointer = {
       start: point,
@@ -662,6 +1014,13 @@
       ),
       last_move: state.lastMove,
       message: state.message,
+      sound_enabled: sounds.enabled,
+      unlocked_tiles: Array.from(state.unlocked).sort((a, b) => a - b),
+      effects: {
+        particles: state.particles.length,
+        score_floats: state.scoreFloats.length,
+        banner: state.banner ? state.banner.text : ""
+      },
       animation: state.animation
         ? {
             progress: Number(Math.min(1, state.animation.elapsed / state.animation.duration).toFixed(2)),
@@ -684,6 +1043,7 @@
   };
 
   document.addEventListener("keydown", (event) => {
+    sounds.init();
     const key = event.key.toLowerCase();
     if (key === "r") {
       restartGame();
@@ -727,6 +1087,27 @@
   window.addEventListener("resize", resizeCanvas);
   document.addEventListener("fullscreenchange", resizeCanvas);
 
+  const soundBtn = document.getElementById("toggle-sound");
+  if (soundBtn) {
+    soundBtn.addEventListener("click", () => {
+      sounds.enabled = !sounds.enabled;
+      sounds.init();
+      soundBtn.textContent = sounds.enabled ? "Sons: Ligados 🔊" : "Sons: Mudos 🔇";
+      soundBtn.classList.toggle("muted", !sounds.enabled);
+      soundBtn.setAttribute("aria-pressed", sounds.enabled ? "true" : "false");
+    });
+  }
+
   resizeCanvas();
-  render();
+
+  let lastTime = performance.now();
+  function gameLoop() {
+    const now = performance.now();
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+    update(Math.min(dt, 0.1));
+    render();
+    requestAnimationFrame(gameLoop);
+  }
+  requestAnimationFrame(gameLoop);
 })();

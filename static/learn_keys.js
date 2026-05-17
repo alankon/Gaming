@@ -8,9 +8,11 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v6-single-voice";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v7-richer-soundboard";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
+    baby: "/static/sounds/baby-laugh-cc-by.ogg",
+    buzz: "/static/sounds/bee-buzz-public-domain.ogg",
     meow: "/static/sounds/cat-meow-public-domain.mp3",
     woof: "/static/sounds/dog-bark-wikimedia.ogg",
     jump: "/static/sounds/howler-monkey-cc-by.ogg",
@@ -20,6 +22,7 @@
     roar: "/static/sounds/big-cat-roar-public-domain.ogg",
     dragon: "/static/sounds/big-cat-roar-public-domain.ogg"
   };
+  const PUBLIC_OVERLAYS = new Set(["dragon", "tiger", "roar", "trumpet"]);
   const publicSoundCache = new Map();
   const activeSoundNodes = new Set();
   let activePublicAudio = null;
@@ -130,7 +133,7 @@
     if (!publicSoundCache.has(kind)) {
       const audio = new Audio(src);
       audio.preload = "auto";
-      audio.volume = kind === "woof" ? 0.9 : 0.82;
+      audio.volume = kind === "buzz" ? 0.55 : kind === "baby" ? 0.76 : kind === "woof" ? 0.9 : 0.82;
       publicSoundCache.set(kind, audio);
     }
     return publicSoundCache.get(kind);
@@ -285,10 +288,10 @@
         value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.95 + Math.sin(2 * Math.PI * pitch * 2.01 * t) * 0.24);
       } else if (kind === "dragon" || kind === "roar" || kind === "tiger") {
         const env = burstEnvelope(t, 0.02, duration - 0.06);
-        const base = kind === "dragon" ? 58 : kind === "tiger" ? 86 : 72;
-        const sweep = base + Math.sin(t * 8) * 14 + (1 - t / duration) * 52;
-        const bite = kind === "tiger" ? Math.sin(2 * Math.PI * 430 * t) * 0.18 : 0;
-        value = env * (Math.sin(2 * Math.PI * sweep * t) * 1.05 + noise() * 0.98 + bite);
+        const base = kind === "dragon" ? 42 : kind === "tiger" ? 82 : 68;
+        const sweep = base + Math.sin(t * 9) * 18 + (1 - t / duration) * (kind === "dragon" ? 90 : 58);
+        const bite = kind === "tiger" ? Math.sin(2 * Math.PI * 520 * t) * 0.26 : Math.sin(2 * Math.PI * 170 * t) * 0.12;
+        value = env * (Math.sin(2 * Math.PI * sweep * t) * 1.22 + noise() * 1.16 + bite);
       } else if (kind === "donkey") {
         const first = burstEnvelope(t, 0.02, 0.42);
         const second = burstEnvelope(t, 0.48, 0.5);
@@ -298,8 +301,8 @@
         value += second * (Math.sign(Math.sin(2 * Math.PI * p2 * t)) * 0.9 + noise() * 0.42);
       } else if (kind === "trumpet") {
         const env = burstEnvelope(t, 0.02, 0.7);
-        const pitch = 240 + Math.sin(t * 10) * 90 + (t / duration) * 260;
-        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.75 + Math.sin(2 * Math.PI * pitch * 2 * t) * 0.25);
+        const pitch = 190 + Math.sin(t * 12) * 120 + (t / duration) * 360;
+        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.88 + Math.sin(2 * Math.PI * pitch * 2.01 * t) * 0.32);
       } else if (kind === "quack") {
         const env = burstEnvelope(t, 0.02, 0.2) + burstEnvelope(t, 0.22, 0.18);
         const pitch = 520 - t * 310;
@@ -318,8 +321,8 @@
         value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.75 + noise() * 0.48);
       } else if (kind === "buzz") {
         const env = burstEnvelope(t, 0.01, 0.42);
-        const pitch = 430 + Math.sin(t * 95) * 85;
-        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.48 + noise() * 0.25);
+        const pitch = 360 + Math.sin(t * 125) * 135;
+        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.62 + noise() * 0.34);
       } else if (kind === "sparkle" || kind === "magic") {
         const freqs = kind === "sparkle" ? [740, 980, 1320, 1760] : [660, 990, 1320, 1980];
         for (let j = 0; j < freqs.length; j++) {
@@ -334,7 +337,8 @@
         value = env * Math.sin(2 * Math.PI * pitch * t) * 0.72;
       } else if (kind === "pop" || kind === "tap" || kind === "clip") {
         const env = burstEnvelope(t, 0.005, duration - 0.02);
-        value = env * (noise() * 0.9 + Math.sin(2 * Math.PI * 760 * t) * 0.35);
+        const snap = kind === "pop" ? 1.55 : 0.9;
+        value = env * (noise() * snap + Math.sin(2 * Math.PI * 980 * t) * 0.42);
       } else if (kind === "baby" || kind === "hug" || kind === "ding") {
         const env = burstEnvelope(t, 0.01, duration - 0.04);
         const pitch = kind === "baby" ? 760 + Math.sin(t * 22) * 160 : kind === "hug" ? 430 : 920;
@@ -358,7 +362,7 @@
     return true;
   }
 
-  function playGeneratedSound(kind, ticket) {
+  function playGeneratedSound(kind, ticket, overlay = false) {
     if (!audioCtx) {
       state.audioState = "unavailable";
       audioStatusEl.textContent = "Som indisponivel";
@@ -371,8 +375,8 @@
       if (playBufferSound(kind)) {
         state.audioReady = true;
         state.audioState = audioCtx.state;
-        state.lastSoundSource = "procedural-buffer";
-        audioStatusEl.textContent = `Som ativo: ${kind}`;
+        state.lastSoundSource = overlay ? "public-file+procedural" : "procedural-buffer";
+        audioStatusEl.textContent = overlay ? `Som reforcado: ${kind}` : `Som ativo: ${kind}`;
         return;
       }
       const sounds = {
@@ -468,8 +472,8 @@
       (sounds[kind] || sounds.ding)();
       state.audioReady = true;
       state.audioState = audioCtx.state;
-      state.lastSoundSource = "procedural-oscillator";
-      audioStatusEl.textContent = `Som ativo: ${kind}`;
+      state.lastSoundSource = overlay ? "public-file+procedural" : "procedural-oscillator";
+      audioStatusEl.textContent = overlay ? `Som reforcado: ${kind}` : `Som ativo: ${kind}`;
     };
     try {
       if (audioCtx.state === "suspended") {
@@ -485,7 +489,12 @@
   function playCuteSound(kind) {
     stopCurrentSound();
     const ticket = soundTicket;
-    if (playPublicSound(kind, ticket)) return;
+    if (playPublicSound(kind, ticket)) {
+      if (PUBLIC_OVERLAYS.has(kind)) {
+        playGeneratedSound(kind, ticket, true);
+      }
+      return;
+    }
     playGeneratedSound(kind, ticket);
   }
 
@@ -600,7 +609,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam mapeamento educativo; setas chamam o burrinho; outras teclas nao mapeadas voltam para a estrela. Cada tecla interrompe o som anterior antes de tocar o novo."
+      note: "A-Z e 0-9 usam mapeamento educativo; setas chamam o burrinho; outras teclas nao mapeadas voltam para a estrela. Sons publicos novos e reforcos procedurais param o som anterior antes do proximo."
     });
   };
 
