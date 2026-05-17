@@ -221,6 +221,11 @@ body {
   font-weight: 900;
 }
 
+.audio-status {
+  color: #3f566f;
+  font-size: 0.92rem;
+}
+
 .keyboard-zone {
   background: var(--panel);
   border: 1px solid var(--line);

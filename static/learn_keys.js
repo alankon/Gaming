@@ -3,11 +3,12 @@
   const hintTextEl = document.getElementById("hint-text");
   const pressCountEl = document.getElementById("press-count");
   const touchKeysEl = document.getElementById("touch-keys");
+  const audioStatusEl = document.getElementById("audio-status");
   const funEmojiEl = document.getElementById("fun-emoji");
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v2";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v3";
   const buttons = new Map();
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelhinha", sound: "buzz" },
@@ -53,7 +54,14 @@
     lastKey: "?",
     lastItem: "estrelinha",
     lastSound: "sparkle",
-    audioReady: false
+    audioReady: false,
+    audioState: "waiting"
+  };
+  const STAR_FUN = {
+    emoji: "🌟",
+    label: "Estrelinha inicial",
+    sound: "sparkle",
+    star: true
   };
   const FALLBACK_FUN = {
     emoji: "🫏",
@@ -64,6 +72,19 @@
 
   const AudioClass = window.AudioContext || window.webkitAudioContext;
   const audioCtx = AudioClass ? new AudioClass() : null;
+  const masterGain = audioCtx ? audioCtx.createGain() : null;
+  const compressor = audioCtx ? audioCtx.createDynamicsCompressor() : null;
+
+  if (audioCtx && masterGain && compressor) {
+    masterGain.gain.value = 0.72;
+    compressor.threshold.value = -18;
+    compressor.knee.value = 24;
+    compressor.ratio.value = 6;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.18;
+    masterGain.connect(compressor);
+    compressor.connect(audioCtx.destination);
+  }
 
   function nowTime() {
     return audioCtx ? audioCtx.currentTime : 0;
@@ -79,7 +100,7 @@
     gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(masterGain || audioCtx.destination);
     osc.start(start);
     osc.stop(start + duration + 0.04);
   }
@@ -95,7 +116,7 @@
     gain.gain.exponentialRampToValueAtTime(volume, start + 0.018);
     gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(masterGain || audioCtx.destination);
     osc.start(start);
     osc.stop(start + duration + 0.04);
   }
@@ -120,13 +141,17 @@
     source.buffer = buffer;
     source.connect(filter);
     filter.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(masterGain || audioCtx.destination);
     source.start(start);
     source.stop(start + duration + 0.04);
   }
 
   function playCuteSound(kind) {
-    if (!audioCtx) return;
+    if (!audioCtx) {
+      state.audioState = "unavailable";
+      audioStatusEl.textContent = "Som indisponivel";
+      return;
+    }
     const play = () => {
       const t = nowTime() + 0.015;
       const sounds = {
@@ -152,7 +177,10 @@
           addTone(540, t + 0.16, 0.08, "sawtooth", 0.07);
         },
         magic: () => {
-          [660, 880, 1320].forEach((freq, i) => addTone(freq, t + i * 0.08, 0.16, "sine", 0.1));
+          [660, 880, 1320, 1760].forEach((freq, i) => addTone(freq, t + i * 0.07, 0.18, "sine", 0.15));
+        },
+        sparkle: () => {
+          [740, 980, 1320, 1760].forEach((freq, i) => addTone(freq, t + i * 0.06, 0.2, "sine", 0.14));
         },
         baby: () => {
           addTone(760, t, 0.12, "triangle", 0.11);
@@ -206,8 +234,8 @@
         hug: () => addTone(430, t, 0.24, "triangle", 0.09),
         plop: () => addSlide(250, 120, t, 0.18, "sine", 0.1),
         pop: () => addSlide(540, 980, t, 0.09, "triangle", 0.11),
-        ding: () => addTone(920, t, 0.22, "sine", 0.1),
-        tap: () => addTone(520, t, 0.08, "triangle", 0.09),
+        ding: () => addTone(920, t, 0.28, "sine", 0.18),
+        tap: () => addTone(520, t, 0.12, "triangle", 0.16),
         donkey: () => {
           addNoise(t, 0.24, 0.12, 310);
           addSlide(420, 145, t, 0.3, "sawtooth", 0.18);
@@ -218,9 +246,13 @@
       };
       (sounds[kind] || sounds.ding)();
       state.audioReady = true;
+      state.audioState = audioCtx.state;
+      audioStatusEl.textContent = `Som ativo: ${kind}`;
     };
     try {
       if (audioCtx.state === "suspended") {
+        state.audioState = "unlocking";
+        audioStatusEl.textContent = "Liberando som...";
         audioCtx.resume().then(play).catch(() => {});
         return;
       }
@@ -242,18 +274,20 @@
   }
 
   function registerChar(char, displayKey) {
-    const fun = FUN_MAP[char] || FALLBACK_FUN;
+    const fun = char === "STAR:space" || char === "STAR:enter" ? STAR_FUN : FUN_MAP[char] || FALLBACK_FUN;
     state.lastKey = char;
-    state.lastItem = fun.fallback ? `${fun.label}: tecla ${displayKey}` : fun.label;
+    state.lastItem = fun.fallback || fun.star ? `${fun.label}: tecla ${displayKey}` : fun.label;
     state.lastSound = fun.sound;
     state.pressCount += 1;
-    lastKeyEl.textContent = fun.fallback ? "!" : char;
+    lastKeyEl.textContent = fun.fallback ? "!" : fun.star ? "★" : char;
     pressCountEl.textContent = String(state.pressCount);
-    hintTextEl.textContent = fun.fallback
+    hintTextEl.textContent = fun.star
+      ? "Espaco e Enter voltam para a estrelinha inicial."
+      : fun.fallback
       ? "Essa tecla chamou o burrinho surpresa."
       : "Toque outra tecla para trocar o desenho animado.";
     funEmojiEl.textContent = fun.emoji;
-    funLabelEl.textContent = fun.fallback ? `${fun.label}: ${displayKey}` : fun.label;
+    funLabelEl.textContent = fun.fallback || fun.star ? `${fun.label}: ${displayKey}` : fun.label;
     funCardEl.classList.toggle("silly", Boolean(fun.fallback));
     flashButton(char);
     replayAnimation();
@@ -297,6 +331,14 @@
       registerChar(normalized, normalized);
       return;
     }
+    if (event.key === " " || event.key === "Spacebar") {
+      registerChar("STAR:space", "espaco");
+      return;
+    }
+    if (event.key === "Enter") {
+      registerChar("STAR:enter", "enter");
+      return;
+    }
     registerChar(`OTHER:${labelForOtherKey(event.key)}`, labelForOtherKey(event.key));
   }
 
@@ -321,6 +363,7 @@
       last_sound: state.lastSound,
       press_count: state.pressCount,
       audio_ready: state.audioReady,
+      audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
       note: "Aceita qualquer tecla do teclado fisico; A-Z e 0-9 tambem funcionam por botoes touch. Usa WebAudio procedural, sem voz e sem arquivos de audio."
