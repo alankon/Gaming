@@ -20,7 +20,10 @@
     ribbit: "/static/sounds/frog-croak-open.oga",
     tiger: "/static/sounds/big-cat-roar-public-domain.ogg",
     roar: "/static/sounds/big-cat-roar-public-domain.ogg",
-    dragon: "/static/sounds/big-cat-roar-public-domain.ogg"
+    dragon: "/static/sounds/big-cat-roar-public-domain.ogg",
+    bear: "/static/sounds/bear-growl.ogg",
+    panda: "/static/sounds/panda-twittering.ogg",
+    zebra: "/static/sounds/zebra-barking.ogg"
   };
   const PUBLIC_OVERLAYS = new Set([]);
   const publicSoundCache = new Map();
@@ -42,8 +45,8 @@
     L: { emoji: "🦁", label: "L de leao", sound: "roar" },
     M: { emoji: "🐒", label: "M de macaquinho", sound: "jump" },
     N: { emoji: "👶", label: "N de nenem", sound: "baby" },
-    O: { emoji: "🐻", label: "O de ursinho", sound: "hug" },
-    P: { emoji: "🐼", label: "P de panda", sound: "hug" },
+    O: { emoji: "🐻", label: "O de ursinho", sound: "bear" },
+    P: { emoji: "🐼", label: "P de panda", sound: "panda" },
     Q: { emoji: "🧀", label: "Q de queijo", sound: "pop" },
     R: { emoji: "🤖", label: "R de robo", sound: "robot" },
     S: { emoji: "🐸", label: "S de sapinho", sound: "ribbit" },
@@ -53,7 +56,7 @@
     W: { emoji: "🍉", label: "W de melancia", sound: "pop" },
     X: { emoji: "❌", label: "X de xis divertido", sound: "tap" },
     Y: { emoji: "🪀", label: "Y de ioio", sound: "boing" },
-    Z: { emoji: "🦓", label: "Z de zebra", sound: "clip" },
+    Z: { emoji: "🦓", label: "Z de zebra", sound: "zebra" },
     0: { emoji: "⚽", label: "Zero de bola", sound: "bounce" },
     1: { emoji: "☀️", label: "Um sol brilhante", sound: "ding" },
     2: { emoji: "🦆", label: "Dois patinhos", sound: "quack" },
