@@ -8,56 +8,36 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v7-richer-soundboard";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v8-brasil-imitacoes";
   const buttons = new Map();
-  const PUBLIC_SOUNDS = {
-    baby: "static/sounds/baby-laugh-cc-by.ogg",
-    buzz: "static/sounds/bee-buzz-public-domain.ogg",
-    meow: "static/sounds/cat-meow-public-domain.mp3",
-    woof: "static/sounds/dog-bark-wikimedia.ogg",
-    jump: "static/sounds/cute-monkey-chatter.mp3",
-    trumpet: "static/sounds/elephant-trumpet-cc0.ogg",
-    ribbit: "static/sounds/frog-croak-open.oga",
-    tiger: "static/sounds/big-cat-roar-public-domain.ogg",
-    roar: "static/sounds/big-cat-roar-public-domain.ogg",
-    dragon: "static/sounds/big-cat-roar-public-domain.ogg",
-    bear: "static/sounds/bear-growl.ogg",
-    panda: "static/sounds/panda-twittering.ogg",
-    zebra: "static/sounds/zebra-barking.ogg",
-    giraffe: "static/sounds/giraffe-grunt.oga",
-    balloon: "static/sounds/balloon-pop.ogg"
-  };
-  const PUBLIC_OVERLAYS = new Set([]);
-  const publicSoundCache = new Map();
   const activeSoundNodes = new Set();
-  let activePublicAudio = null;
   let soundTicket = 0;
   const FUN_MAP = {
-    A: { emoji: "🐝", label: "A de abelhinha", sound: "buzz" },
-    B: { emoji: "🍼", label: "B de bebe feliz", sound: "baby" },
+    A: { emoji: "🐝", label: "A de abelha", sound: "buzz" },
+    B: { emoji: "👶", label: "B de bebe", sound: "baby" },
     C: { emoji: "🐶", label: "C de cachorro", sound: "woof" },
     D: { emoji: "🐉", label: "D de dragao", sound: "dragon" },
     E: { emoji: "🐘", label: "E de elefante", sound: "trumpet" },
-    F: { emoji: "🧚‍♀️", label: "F de fada", sound: "magic" },
+    F: { emoji: "🧚", label: "F de fada", sound: "magic" },
     G: { emoji: "🐱", label: "G de gato", sound: "meow" },
     H: { emoji: "🦛", label: "H de hipopotamo", sound: "plop" },
-    I: { emoji: "🧁", label: "I de cupcake", sound: "ding" },
-    J: { emoji: "🦒", label: "J de jirafa", sound: "giraffe" },
-    K: { emoji: "🪁", label: "K de pipa colorida", sound: "wind" },
+    I: { emoji: "🏝️", label: "I de ilha", sound: "wind" },
+    J: { emoji: "🐊", label: "J de jacare", sound: "jacare" },
+    K: { emoji: "🥝", label: "K de kiwi", sound: "pop" },
     L: { emoji: "🦁", label: "L de leao", sound: "roar" },
-    M: { emoji: "🐒", label: "M de macaquinho", sound: "jump" },
+    M: { emoji: "🐒", label: "M de macaco", sound: "monkey" },
     N: { emoji: "👶", label: "N de nenem", sound: "baby" },
-    O: { emoji: "🐻", label: "O de ursinho", sound: "bear" },
-    P: { emoji: "🐼", label: "P de panda", sound: "panda" },
+    O: { emoji: "🐑", label: "O de ovelha", sound: "sheep" },
+    P: { emoji: "🦆", label: "P de pato", sound: "quack" },
     Q: { emoji: "🧀", label: "Q de queijo", sound: "pop" },
     R: { emoji: "🤖", label: "R de robo", sound: "robot" },
-    S: { emoji: "🐸", label: "S de sapinho", sound: "ribbit" },
+    S: { emoji: "🐸", label: "S de sapo", sound: "ribbit" },
     T: { emoji: "🐯", label: "T de tigre", sound: "tiger" },
-    U: { emoji: "🦄", label: "U de unicornio", sound: "magic" },
-    V: { emoji: "🦊", label: "V de raposinha veloz", sound: "zip" },
-    W: { emoji: "🍉", label: "W de melancia", sound: "pop" },
-    X: { emoji: "❌", label: "X de xis divertido", sound: "tap" },
-    Y: { emoji: "🪀", label: "Y de ioio", sound: "boing" },
+    U: { emoji: "🍇", label: "U de uva", sound: "pop" },
+    V: { emoji: "🐄", label: "V de vaca", sound: "moo" },
+    W: { emoji: "🧇", label: "W de waffle", sound: "ding" },
+    X: { emoji: "☕", label: "X de xicara", sound: "tap" },
+    Y: { emoji: "🪀", label: "Y de yoyo", sound: "boing" },
     Z: { emoji: "🦓", label: "Z de zebra", sound: "zebra" },
     0: { emoji: "⚽", label: "Zero de bola", sound: "bounce" },
     1: { emoji: "☀️", label: "Um sol brilhante", sound: "ding" },
@@ -76,7 +56,7 @@
     lastKey: "?",
     lastItem: "estrelinha",
     lastSound: "sparkle",
-    lastSoundSource: "procedural",
+    lastSoundSource: "procedural-imitation",
     audioReady: false,
     audioState: "waiting"
   };
@@ -117,58 +97,12 @@
 
   function stopCurrentSound() {
     soundTicket += 1;
-    if (activePublicAudio) {
-      try {
-        activePublicAudio.pause();
-        activePublicAudio.currentTime = 0;
-      } catch {}
-      activePublicAudio = null;
-    }
     for (const node of activeSoundNodes) {
       try {
         node.stop(0);
       } catch {}
     }
     activeSoundNodes.clear();
-  }
-
-  function publicAudioFor(kind) {
-    const src = PUBLIC_SOUNDS[kind];
-    if (!src) return null;
-    if (!publicSoundCache.has(kind)) {
-      const audio = new Audio(src);
-      audio.preload = "auto";
-      audio.volume = kind === "buzz" ? 0.55 : kind === "baby" ? 0.76 : kind === "woof" ? 0.9 : 0.82;
-      publicSoundCache.set(kind, audio);
-    }
-    return publicSoundCache.get(kind);
-  }
-
-  function playPublicSound(kind, ticket) {
-    const audio = publicAudioFor(kind);
-    if (!audio) return false;
-    try {
-      activePublicAudio = audio;
-      audio.pause();
-      if (kind === "buzz") {
-        audio.currentTime = 1.0;
-      } else {
-        audio.currentTime = 0;
-      }
-      const playPromise = audio.play();
-      state.audioReady = true;
-      state.audioState = "playing-public-file";
-      state.lastSoundSource = "public-file";
-      audioStatusEl.textContent = `Som publico: ${kind}`;
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {
-          if (ticket === soundTicket) playGeneratedSound(kind, ticket);
-        });
-      }
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   function nowTime() {
@@ -264,11 +198,17 @@
       bubble: 0.58,
       boing: 0.42,
       bounce: 0.42,
+      balloon: 0.32,
       pop: 0.28,
       ding: 0.42,
       tap: 0.18,
       baby: 0.5,
       jump: 0.34,
+      monkey: 0.64,
+      jacare: 0.46,
+      sheep: 0.62,
+      moo: 0.7,
+      zebra: 0.5,
       hug: 0.44,
       plop: 0.32,
       wind: 0.62,
@@ -316,6 +256,13 @@
         const env = burstEnvelope(t, 0.02, 0.2) + burstEnvelope(t, 0.22, 0.18);
         const pitch = 520 - t * 310;
         value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.78 + noise() * 0.18);
+      } else if (kind === "jacare") {
+        const snapA = burstEnvelope(t, 0.02, 0.08);
+        const snapB = burstEnvelope(t, 0.16, 0.09);
+        const growl = burstEnvelope(t, 0.25, 0.18);
+        value = snapA * (noise() * 1.5 + Math.sin(2 * Math.PI * 180 * t) * 0.35);
+        value += snapB * (noise() * 1.25 + Math.sin(2 * Math.PI * 145 * t) * 0.28);
+        value += growl * (Math.sign(Math.sin(2 * Math.PI * 82 * t)) * 0.42 + noise() * 0.25);
       } else if (kind === "ribbit") {
         const env = burstEnvelope(t, 0.02, 0.18) + burstEnvelope(t, 0.27, 0.22);
         const pitch = 240 + Math.sin(t * 36) * 190;
@@ -332,6 +279,21 @@
         const env = burstEnvelope(t, 0.01, 0.42);
         const pitch = 360 + Math.sin(t * 125) * 135;
         value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.62 + noise() * 0.34);
+      } else if (kind === "monkey") {
+        const a = burstEnvelope(t, 0.02, 0.12);
+        const b = burstEnvelope(t, 0.18, 0.12);
+        const c = burstEnvelope(t, 0.34, 0.18);
+        value = a * Math.sin(2 * Math.PI * (760 + Math.sin(t * 80) * 120) * t) * 0.7;
+        value += b * Math.sin(2 * Math.PI * (980 - t * 300) * t) * 0.72;
+        value += c * (Math.sin(2 * Math.PI * 640 * t) * 0.52 + noise() * 0.16);
+      } else if (kind === "sheep") {
+        const env = burstEnvelope(t, 0.03, 0.52);
+        const pitch = 360 + Math.sin(t * 18) * 95 - t * 110;
+        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.7 + Math.sin(2 * Math.PI * pitch * 1.5 * t) * 0.22);
+      } else if (kind === "moo") {
+        const env = burstEnvelope(t, 0.03, 0.62);
+        const pitch = 145 - t * 45 + Math.sin(t * 10) * 18;
+        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.82 + Math.sin(2 * Math.PI * pitch * 2 * t) * 0.2);
       } else if (kind === "sparkle" || kind === "magic") {
         const freqs = kind === "sparkle" ? [740, 980, 1320, 1760] : [660, 990, 1320, 1980];
         for (let j = 0; j < freqs.length; j++) {
@@ -344,14 +306,19 @@
         const env = burstEnvelope(t, 0.01, duration - 0.04);
         const pitch = 260 + Math.sin((t / duration) * Math.PI) * 620;
         value = env * Math.sin(2 * Math.PI * pitch * t) * 0.72;
-      } else if (kind === "pop" || kind === "tap" || kind === "clip") {
+      } else if (kind === "balloon" || kind === "pop" || kind === "tap" || kind === "clip") {
         const env = burstEnvelope(t, 0.005, duration - 0.02);
-        const snap = kind === "pop" ? 1.55 : 0.9;
-        value = env * (noise() * snap + Math.sin(2 * Math.PI * 980 * t) * 0.42);
+        const snap = kind === "balloon" ? 1.9 : kind === "pop" ? 1.55 : 0.9;
+        const thump = kind === "balloon" ? Math.sin(2 * Math.PI * 90 * t) * 0.38 : 0;
+        value = env * (noise() * snap + Math.sin(2 * Math.PI * 980 * t) * 0.42 + thump);
       } else if (kind === "baby" || kind === "hug" || kind === "ding") {
         const env = burstEnvelope(t, 0.01, duration - 0.04);
         const pitch = kind === "baby" ? 760 + Math.sin(t * 22) * 160 : kind === "hug" ? 430 : 920;
         value = env * Math.sin(2 * Math.PI * pitch * t) * 0.62;
+      } else if (kind === "zebra") {
+        const env = burstEnvelope(t, 0.02, 0.42);
+        const pitch = 410 + Math.sin(t * 32) * 210;
+        value = env * (Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.52 + noise() * 0.3);
       } else if (kind === "wind" || kind === "zip" || kind === "plop") {
         const env = burstEnvelope(t, 0.01, duration - 0.03);
         const pitch = kind === "zip" ? 920 - t * 2100 : kind === "plop" ? 260 - t * 520 : 520 + Math.sin(t * 16) * 170;
@@ -371,7 +338,7 @@
     return true;
   }
 
-  function playGeneratedSound(kind, ticket, overlay = false) {
+  function playGeneratedSound(kind, ticket) {
     if (!audioCtx) {
       state.audioState = "unavailable";
       audioStatusEl.textContent = "Som indisponivel";
@@ -384,8 +351,8 @@
       if (playBufferSound(kind)) {
         state.audioReady = true;
         state.audioState = audioCtx.state;
-        state.lastSoundSource = overlay ? "public-file+procedural" : "procedural-buffer";
-        audioStatusEl.textContent = overlay ? `Som reforcado: ${kind}` : `Som ativo: ${kind}`;
+        state.lastSoundSource = "procedural-imitation";
+        audioStatusEl.textContent = `Imitacao ativa: ${kind}`;
         return;
       }
       const sounds = {
@@ -457,6 +424,26 @@
           addSlide(780, 330, t, 0.16, "sawtooth", 0.14);
           addSlide(680, 290, t + 0.14, 0.16, "sawtooth", 0.12);
         },
+        jacare: () => {
+          addNoise(t, 0.08, 0.16, 420);
+          addNoise(t + 0.16, 0.09, 0.13, 360);
+          addSlide(120, 70, t + 0.25, 0.16, "sawtooth", 0.1);
+        },
+        monkey: () => {
+          addTone(760, t, 0.08, "triangle", 0.12);
+          addTone(980, t + 0.1, 0.08, "triangle", 0.12);
+          addTone(650, t + 0.22, 0.12, "triangle", 0.1);
+        },
+        sheep: () => addSlide(420, 260, t, 0.42, "triangle", 0.14),
+        moo: () => addSlide(150, 95, t, 0.5, "sine", 0.16),
+        zebra: () => {
+          addSlide(520, 260, t, 0.12, "square", 0.1);
+          addSlide(460, 640, t + 0.16, 0.18, "square", 0.09);
+        },
+        balloon: () => {
+          addNoise(t, 0.08, 0.18, 900);
+          addTone(90, t, 0.12, "sine", 0.1);
+        },
         vroom: () => addSlide(90, 180, t, 0.34, "sawtooth", 0.08),
         wind: () => addSlide(740, 520, t, 0.28, "sine", 0.08),
         zip: () => addSlide(900, 360, t, 0.16, "sine", 0.1),
@@ -481,8 +468,8 @@
       (sounds[kind] || sounds.ding)();
       state.audioReady = true;
       state.audioState = audioCtx.state;
-      state.lastSoundSource = overlay ? "public-file+procedural" : "procedural-oscillator";
-      audioStatusEl.textContent = overlay ? `Som reforcado: ${kind}` : `Som ativo: ${kind}`;
+      state.lastSoundSource = "procedural-imitation";
+      audioStatusEl.textContent = `Imitacao ativa: ${kind}`;
     };
     try {
       if (audioCtx.state === "suspended") {
@@ -498,12 +485,6 @@
   function playCuteSound(kind) {
     stopCurrentSound();
     const ticket = soundTicket;
-    if (playPublicSound(kind, ticket)) {
-      if (PUBLIC_OVERLAYS.has(kind)) {
-        playGeneratedSound(kind, ticket, true);
-      }
-      return;
-    }
     playGeneratedSound(kind, ticket);
   }
 
@@ -618,7 +599,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam mapeamento educativo; setas chamam o burrinho; outras teclas nao mapeadas voltam para a estrela. Sons publicos novos e reforcos procedurais param o som anterior antes do proximo."
+      note: "A-Z e 0-9 usam palavras em portugues do Brasil; J agora e jacare. Os sons sao imitacoes infantis e cada tecla interrompe o som anterior antes do proximo."
     });
   };
 

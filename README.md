@@ -4,6 +4,17 @@ Menu web com dois jogos:
 
 - `Git Grid 2048` em `/2048`
 - `Aprender Teclas` em `/aprender-teclas`
+- GitHub Pages: https://alankon.github.io/Gaming/aprender-teclas.html
+
+## Publicar GitHub Pages
+
+Sempre que atualizar templates ou arquivos em `static`, gere a versao estatica antes do commit:
+
+```bash
+npm run build:pages
+```
+
+O build atualiza `docs/`, que e a pasta publicada no GitHub Pages.
 
 ## Rodar localmente
 

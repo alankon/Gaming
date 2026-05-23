@@ -63,3 +63,5 @@ Original prompt: Build and iterate a playable web game in this workspace, valida
 - Implementado no Aprender Teclas: motor `animal-sounds-v8-brasil-imitacoes`, removida dependencia de arquivos reais de audio, `J de jacare`, mapeamento A-Z revisado para palavras naturais em PT-BR e sons procedurais novos para jacare, macaco, ovelha, vaca, zebra e balao.
 - Limpeza: arquivos reais antigos em `static/sounds` removidos; mantida apenas uma nota explicando que o jogo usa imitações WebAudio autorais.
 - Validacao: servidor reiniciado em `http://127.0.0.1:5000`; Playwright oficial passou em `/aprender-teclas`; teste extra confirmou `J de jacare`, `V de vaca`, `O de ovelha`, `P de pato`, `Z de zebra`, `3 baloes` e `STAR:virgula`, todos com `last_sound_source: procedural-imitation`; Playwright oficial do 2048 tambem passou.
+- Nova regra operacional: sempre publicar a versao estatica do GitHub Pages em `docs/`, mantendo ativo `https://alankon.github.io/Gaming/aprender-teclas.html`.
+- Implementado: `npm run build:pages` chama `build_static.py`; `docs/` foi regenerado com `sound-v8`, removendo os audios reais antigos tambem da publicacao estatica.
