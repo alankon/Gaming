@@ -8,9 +8,26 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v8-brasil-imitacoes";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v9-downloaded-soft";
   const buttons = new Map();
+  const PUBLIC_SOUNDS = {
+    baby: "static/sounds/baby-laugh-cc-by.ogg",
+    balloon: "static/sounds/balloon-pop.ogg",
+    bear: "static/sounds/bear-growl.ogg",
+    buzz: "static/sounds/bee-buzz-public-domain.ogg",
+    dragon: "static/sounds/big-cat-roar-public-domain.ogg",
+    meow: "static/sounds/cat-meow-public-domain.mp3",
+    monkey: "static/sounds/cute-monkey-chatter.mp3",
+    woof: "static/sounds/dog-bark-wikimedia.ogg",
+    trumpet: "static/sounds/elephant-trumpet-cc0.ogg",
+    ribbit: "static/sounds/frog-croak-open.oga",
+    roar: "static/sounds/big-cat-roar-public-domain.ogg",
+    tiger: "static/sounds/big-cat-roar-public-domain.ogg",
+    zebra: "static/sounds/zebra-barking.ogg"
+  };
+  const publicSoundCache = new Map();
   const activeSoundNodes = new Set();
+  let activePublicAudio = null;
   let soundTicket = 0;
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelha", sound: "buzz" },
@@ -56,7 +73,7 @@
     lastKey: "?",
     lastItem: "estrelinha",
     lastSound: "sparkle",
-    lastSoundSource: "procedural-imitation",
+    lastSoundSource: "downloaded-or-soft-imitation",
     audioReady: false,
     audioState: "waiting"
   };
@@ -79,7 +96,7 @@
   const compressor = audioCtx ? audioCtx.createDynamicsCompressor() : null;
 
   if (audioCtx && masterGain && compressor) {
-    masterGain.gain.value = 0.72;
+    masterGain.gain.value = 0.48;
     compressor.threshold.value = -18;
     compressor.knee.value = 24;
     compressor.ratio.value = 6;
@@ -97,12 +114,74 @@
 
   function stopCurrentSound() {
     soundTicket += 1;
+    if (activePublicAudio) {
+      try {
+        activePublicAudio.pause();
+        activePublicAudio.currentTime = 0;
+      } catch {}
+      activePublicAudio = null;
+    }
     for (const node of activeSoundNodes) {
       try {
         node.stop(0);
       } catch {}
     }
     activeSoundNodes.clear();
+  }
+
+  function volumeFor(kind) {
+    const volumes = {
+      baby: 0.54,
+      balloon: 0.5,
+      bear: 0.42,
+      buzz: 0.34,
+      dragon: 0.48,
+      meow: 0.58,
+      monkey: 0.45,
+      woof: 0.6,
+      trumpet: 0.5,
+      ribbit: 0.56,
+      roar: 0.46,
+      tiger: 0.46,
+      zebra: 0.5
+    };
+    return volumes[kind] || 0.52;
+  }
+
+  function publicAudioFor(kind) {
+    const src = PUBLIC_SOUNDS[kind];
+    if (!src) return null;
+    if (!publicSoundCache.has(kind)) {
+      const audio = new Audio(src);
+      audio.preload = "auto";
+      publicSoundCache.set(kind, audio);
+    }
+    const audio = publicSoundCache.get(kind);
+    audio.volume = volumeFor(kind);
+    return audio;
+  }
+
+  function playDownloadedSound(kind, ticket) {
+    const audio = publicAudioFor(kind);
+    if (!audio) return false;
+    try {
+      activePublicAudio = audio;
+      audio.pause();
+      audio.currentTime = kind === "buzz" ? 0.7 : 0;
+      const playPromise = audio.play();
+      state.audioReady = true;
+      state.audioState = "playing-downloaded-file";
+      state.lastSoundSource = "downloaded-file";
+      audioStatusEl.textContent = `Som baixado: ${kind}`;
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+          if (ticket === soundTicket) playGeneratedSound(kind, ticket);
+        });
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   function nowTime() {
@@ -183,9 +262,9 @@
     const durations = {
       meow: 0.82,
       woof: 0.62,
-      dragon: 0.9,
-      roar: 0.82,
-      tiger: 0.82,
+      dragon: 0.72,
+      roar: 0.68,
+      tiger: 0.68,
       donkey: 1.05,
       trumpet: 0.82,
       quack: 0.5,
@@ -205,9 +284,9 @@
       baby: 0.5,
       jump: 0.34,
       monkey: 0.64,
-      jacare: 0.46,
-      sheep: 0.62,
-      moo: 0.7,
+      jacare: 0.42,
+      sheep: 0.5,
+      moo: 0.56,
       zebra: 0.5,
       hug: 0.44,
       plop: 0.32,
@@ -237,10 +316,10 @@
         value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.95 + Math.sin(2 * Math.PI * pitch * 2.01 * t) * 0.24);
       } else if (kind === "dragon" || kind === "roar" || kind === "tiger") {
         const env = burstEnvelope(t, 0.02, duration - 0.06);
-        const base = kind === "dragon" ? 42 : kind === "tiger" ? 82 : 68;
-        const sweep = base + Math.sin(t * 9) * 18 + (1 - t / duration) * (kind === "dragon" ? 90 : 58);
-        const bite = kind === "tiger" ? Math.sin(2 * Math.PI * 520 * t) * 0.26 : Math.sin(2 * Math.PI * 170 * t) * 0.12;
-        value = env * (Math.sin(2 * Math.PI * sweep * t) * 1.22 + noise() * 1.16 + bite);
+        const base = kind === "dragon" ? 54 : kind === "tiger" ? 86 : 74;
+        const sweep = base + Math.sin(t * 8) * 12 + (1 - t / duration) * 42;
+        const bite = kind === "tiger" ? Math.sin(2 * Math.PI * 420 * t) * 0.1 : 0;
+        value = env * (Math.sin(2 * Math.PI * sweep * t) * 0.58 + noise() * 0.32 + bite);
       } else if (kind === "donkey") {
         const first = burstEnvelope(t, 0.02, 0.42);
         const second = burstEnvelope(t, 0.48, 0.5);
@@ -260,9 +339,9 @@
         const snapA = burstEnvelope(t, 0.02, 0.08);
         const snapB = burstEnvelope(t, 0.16, 0.09);
         const growl = burstEnvelope(t, 0.25, 0.18);
-        value = snapA * (noise() * 1.5 + Math.sin(2 * Math.PI * 180 * t) * 0.35);
-        value += snapB * (noise() * 1.25 + Math.sin(2 * Math.PI * 145 * t) * 0.28);
-        value += growl * (Math.sign(Math.sin(2 * Math.PI * 82 * t)) * 0.42 + noise() * 0.25);
+        value = snapA * (noise() * 0.72 + Math.sin(2 * Math.PI * 180 * t) * 0.18);
+        value += snapB * (noise() * 0.6 + Math.sin(2 * Math.PI * 145 * t) * 0.14);
+        value += growl * (Math.sin(2 * Math.PI * 88 * t) * 0.2 + noise() * 0.12);
       } else if (kind === "ribbit") {
         const env = burstEnvelope(t, 0.02, 0.18) + burstEnvelope(t, 0.27, 0.22);
         const pitch = 240 + Math.sin(t * 36) * 190;
@@ -289,11 +368,11 @@
       } else if (kind === "sheep") {
         const env = burstEnvelope(t, 0.03, 0.52);
         const pitch = 360 + Math.sin(t * 18) * 95 - t * 110;
-        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.7 + Math.sin(2 * Math.PI * pitch * 1.5 * t) * 0.22);
+        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.38 + Math.sin(2 * Math.PI * pitch * 1.5 * t) * 0.12);
       } else if (kind === "moo") {
         const env = burstEnvelope(t, 0.03, 0.62);
         const pitch = 145 - t * 45 + Math.sin(t * 10) * 18;
-        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.82 + Math.sin(2 * Math.PI * pitch * 2 * t) * 0.2);
+        value = env * (Math.sin(2 * Math.PI * pitch * t) * 0.42 + Math.sin(2 * Math.PI * pitch * 2 * t) * 0.1);
       } else if (kind === "sparkle" || kind === "magic") {
         const freqs = kind === "sparkle" ? [740, 980, 1320, 1760] : [660, 990, 1320, 1980];
         for (let j = 0; j < freqs.length; j++) {
@@ -308,8 +387,8 @@
         value = env * Math.sin(2 * Math.PI * pitch * t) * 0.72;
       } else if (kind === "balloon" || kind === "pop" || kind === "tap" || kind === "clip") {
         const env = burstEnvelope(t, 0.005, duration - 0.02);
-        const snap = kind === "balloon" ? 1.9 : kind === "pop" ? 1.55 : 0.9;
-        const thump = kind === "balloon" ? Math.sin(2 * Math.PI * 90 * t) * 0.38 : 0;
+        const snap = kind === "balloon" ? 0.8 : kind === "pop" ? 0.7 : 0.48;
+        const thump = kind === "balloon" ? Math.sin(2 * Math.PI * 90 * t) * 0.16 : 0;
         value = env * (noise() * snap + Math.sin(2 * Math.PI * 980 * t) * 0.42 + thump);
       } else if (kind === "baby" || kind === "hug" || kind === "ding") {
         const env = burstEnvelope(t, 0.01, duration - 0.04);
@@ -351,8 +430,8 @@
       if (playBufferSound(kind)) {
         state.audioReady = true;
         state.audioState = audioCtx.state;
-        state.lastSoundSource = "procedural-imitation";
-        audioStatusEl.textContent = `Imitacao ativa: ${kind}`;
+        state.lastSoundSource = "soft-imitation";
+        audioStatusEl.textContent = `Imitacao suave: ${kind}`;
         return;
       }
       const sounds = {
@@ -468,8 +547,8 @@
       (sounds[kind] || sounds.ding)();
       state.audioReady = true;
       state.audioState = audioCtx.state;
-      state.lastSoundSource = "procedural-imitation";
-      audioStatusEl.textContent = `Imitacao ativa: ${kind}`;
+      state.lastSoundSource = "soft-imitation";
+      audioStatusEl.textContent = `Imitacao suave: ${kind}`;
     };
     try {
       if (audioCtx.state === "suspended") {
@@ -485,6 +564,7 @@
   function playCuteSound(kind) {
     stopCurrentSound();
     const ticket = soundTicket;
+    if (playDownloadedSound(kind, ticket)) return;
     playGeneratedSound(kind, ticket);
   }
 
@@ -599,7 +679,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam palavras em portugues do Brasil; J agora e jacare. Os sons sao imitacoes infantis e cada tecla interrompe o som anterior antes do proximo."
+      note: "A-Z e 0-9 usam palavras em portugues do Brasil; J continua jacare. Sons baixados voltaram como principal, com imitacoes suaves apenas quando nao ha arquivo bom."
     });
   };
 
