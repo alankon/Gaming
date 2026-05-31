@@ -8,7 +8,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v9-downloaded-soft";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v10-downloaded-touch";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
@@ -18,6 +18,9 @@
     dragon: "static/sounds/big-cat-roar-public-domain.ogg",
     meow: "static/sounds/cat-meow-public-domain.mp3",
     monkey: "static/sounds/cute-monkey-chatter.mp3",
+    moo: "static/sounds/cow-moo-wikimedia.ogg",
+    quack: "static/sounds/duck-quack-wikimedia.ogg",
+    sheep: "static/sounds/sheep-baa-wikimedia.ogg",
     woof: "static/sounds/dog-bark-wikimedia.ogg",
     trumpet: "static/sounds/elephant-trumpet-cc0.ogg",
     ribbit: "static/sounds/frog-croak-open.oga",
@@ -74,6 +77,7 @@
     lastItem: "estrelinha",
     lastSound: "sparkle",
     lastSoundSource: "downloaded-or-soft-imitation",
+    lastInput: "aguardando interacao",
     audioReady: false,
     audioState: "waiting"
   };
@@ -138,6 +142,9 @@
       dragon: 0.48,
       meow: 0.58,
       monkey: 0.45,
+      moo: 0.5,
+      quack: 0.5,
+      sheep: 0.48,
       woof: 0.6,
       trumpet: 0.5,
       ribbit: 0.56,
@@ -581,11 +588,12 @@
     funCardEl.classList.add("pop");
   }
 
-  function registerChar(char, displayKey) {
+  function registerChar(char, displayKey, inputSource = "teclado") {
     const fun = char.startsWith("STAR:") ? STAR_FUN : char.startsWith("ARROW:") ? FALLBACK_FUN : FUN_MAP[char] || STAR_FUN;
     state.lastKey = char;
     state.lastItem = fun.fallback || fun.star ? `${fun.label}: tecla ${displayKey}` : fun.label;
     state.lastSound = fun.sound;
+    state.lastInput = inputSource;
     state.pressCount += 1;
     lastKeyEl.textContent = fun.fallback ? "!" : fun.star ? "★" : char;
     pressCountEl.textContent = String(state.pressCount);
@@ -593,7 +601,7 @@
       ? "Tecla nao mapeada voltou para a estrelinha inicial."
       : fun.fallback
       ? "As setas chamaram o burrinho surpresa."
-      : "Toque outra tecla para trocar o desenho animado.";
+      : "Toque, arraste ou aperte outra tecla para chamar outro amiguinho.";
     funEmojiEl.textContent = fun.emoji;
     funLabelEl.textContent = fun.fallback || fun.star ? `${fun.label}: ${displayKey}` : fun.label;
     funCardEl.classList.toggle("silly", Boolean(fun.fallback));
@@ -661,11 +669,60 @@
       btn.className = "key-btn";
       btn.textContent = char;
       btn.setAttribute("aria-label", `Tecla ${char}`);
-      btn.addEventListener("click", () => registerChar(char));
+      btn.addEventListener("click", () => registerChar(char, char, "teclado touch"));
       touchKeysEl.appendChild(btn);
       buttons.set(char, btn);
     }
   }
+
+  let randomPointer = null;
+  let lastRandomAt = Number.NEGATIVE_INFINITY;
+  const RANDOM_DRAG_THRESHOLD = 24;
+  const RANDOM_THROTTLE_MS = 170;
+
+  function shouldIgnoreRandomPointer(target) {
+    return Boolean(target && target.closest && target.closest("button, a"));
+  }
+
+  function triggerRandomFriend(inputSource) {
+    const now = performance.now();
+    if (now - lastRandomAt < RANDOM_THROTTLE_MS) return false;
+    lastRandomAt = now;
+    const char = ALLOWED[Math.floor(Math.random() * ALLOWED.length)];
+    registerChar(char, char, inputSource);
+    return true;
+  }
+
+  document.addEventListener("pointerdown", (event) => {
+    if (shouldIgnoreRandomPointer(event.target)) return;
+    randomPointer = {
+      x: event.clientX,
+      y: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      dragged: false
+    };
+  });
+
+  document.addEventListener("pointermove", (event) => {
+    if (!randomPointer) return;
+    const dx = event.clientX - randomPointer.lastX;
+    const dy = event.clientY - randomPointer.lastY;
+    if (Math.hypot(dx, dy) < RANDOM_DRAG_THRESHOLD) return;
+    randomPointer.lastX = event.clientX;
+    randomPointer.lastY = event.clientY;
+    randomPointer.dragged = triggerRandomFriend("arrasto aleatorio") || randomPointer.dragged;
+  });
+
+  document.addEventListener("pointerup", () => {
+    if (!randomPointer) return;
+    if (!randomPointer.dragged) triggerRandomFriend("toque aleatorio");
+    randomPointer = null;
+  });
+
+  document.addEventListener("pointercancel", () => {
+    randomPointer = null;
+  });
 
   window.render_game_to_text = function renderGameToText() {
     return JSON.stringify({
@@ -674,12 +731,13 @@
       last_item: state.lastItem,
       last_sound: state.lastSound,
       last_sound_source: state.lastSoundSource,
+      last_input: state.lastInput,
       press_count: state.pressCount,
       audio_ready: state.audioReady,
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam palavras em portugues do Brasil; J continua jacare. Sons baixados voltaram como principal, com imitacoes suaves apenas quando nao ha arquivo bom."
+      note: "A-Z e 0-9 usam palavras em portugues do Brasil; J continua jacare. Toques e arrastos fora dos botoes chamam um amiguinho aleatorio. Sons baixados sao a fonte principal, com imitacoes suaves como fallback."
     });
   };
 

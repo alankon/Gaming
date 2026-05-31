@@ -22,6 +22,7 @@ body {
   display: grid;
   place-items: center;
   overflow: hidden;
+  touch-action: none;
 }
 
 .shell {
@@ -102,11 +103,12 @@ canvas {
 @media (max-width: 520px) {
   .shell {
     width: 100vw;
-    padding: 8px;
+    padding: 2px;
   }
 
   .header-container {
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+    padding: 0 4px;
   }
 
   .back-link,
@@ -119,8 +121,8 @@ canvas {
   }
 
   canvas {
-    width: min(calc(100vw - 16px), calc(100vh - 68px));
-    height: min(calc(100vw - 16px), calc(100vh - 68px));
+    width: min(calc(100vw - 4px), calc(100vh - 56px));
+    height: min(calc(100vw - 4px), calc(100vh - 56px));
     border-radius: 20px;
   }
 }

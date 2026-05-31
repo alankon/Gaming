@@ -10,5 +10,10 @@ Public/open sounds used by Aprender Teclas.
 - `howler-monkey-cc-by.ogg`: "Howler monkey.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Howler_monkey.ogg. License stated on source page: CC BY 3.0.
 - `baby-laugh-cc-by.ogg`: "Baby Laugh.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Baby_Laugh.ogg. License stated on source page: CC BY 3.0.
 - `bee-buzz-public-domain.ogg`: "Bombus buzz.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Bombus_buzz.ogg. License stated on source page: Public Domain.
+- `cow-moo-wikimedia.ogg`: "Single Cow Moo.ogg" from Wikimedia Commons. Direct media source: https://upload.wikimedia.org/wikipedia/commons/a/a5/Single_Cow_Moo.ogg.
+- `duck-quack-wikimedia.ogg`: mallard recording from Wikimedia Commons. Direct media source: https://upload.wikimedia.org/wikipedia/commons/f/fa/Anas_platyrhynchos_-_Mallard_-_XC62258.ogg.
+- `sheep-baa-wikimedia.ogg`: "Sheep bleating.ogg" from Wikimedia Commons. Direct media source: https://upload.wikimedia.org/wikipedia/commons/1/13/Sheep_bleating.ogg.
+
+`rooster-wikimedia.ogg` is an unused candidate downloaded by `fetch_sounds.py`. Record its selected Wikimedia source metadata before wiring it into the game.
 
 The game keeps procedural WebAudio fallbacks for browsers that cannot load or play one of these files.

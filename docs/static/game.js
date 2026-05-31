@@ -3,13 +3,13 @@
   const ctx = canvas.getContext("2d");
   const BASE_SIZE = 860;
   const GRID_SIZE = 4;
-  const BOARD_X = 54;
-  const BOARD_Y = 248;
-  const BOARD_SIZE = 558;
+  const BOARD_X = 86;
+  const BOARD_Y = 154;
+  const BOARD_SIZE = 688;
   const GAP = 14;
   const CELL = (BOARD_SIZE - GAP * (GRID_SIZE + 1)) / GRID_SIZE;
   const STORAGE_KEY = "alankon_gaming_grid_best";
-  const RESTART_BUTTON = { x: 54, y: 182, w: 154, h: 52 };
+  const RESTART_BUTTON = { x: 86, y: 108, w: 154, h: 36 };
   const ANIMATION_DURATION = 0.18;
   const SWIPE_THRESHOLD = 36;
   const TILE_THEME = {
@@ -685,32 +685,28 @@
     ctx.textAlign = "center";
     ctx.fillStyle = "#eff6ff";
     ctx.font = '800 20px "Trebuchet MS"';
-    ctx.fillText("Nova run", RESTART_BUTTON.x + RESTART_BUTTON.w / 2, RESTART_BUTTON.y + 34);
+    ctx.fillText("Nova run", RESTART_BUTTON.x + RESTART_BUTTON.w / 2, RESTART_BUTTON.y + 26);
   }
 
   function drawHud() {
     ctx.textAlign = "left";
     ctx.fillStyle = "#e5eefb";
-    ctx.font = '900 62px "Trebuchet MS"';
-    ctx.fillText("alankon Gaming", 54, 84);
+    ctx.font = '900 54px "Trebuchet MS"';
+    ctx.fillText("alankon Gaming", 54, 64);
 
     ctx.fillStyle = "#7dd3fc";
-    ctx.font = '700 25px "Trebuchet MS"';
-    ctx.fillText("Git Grid 2048", 56, 120);
+    ctx.font = '700 23px "Trebuchet MS"';
+    ctx.fillText("Git Grid 2048", 56, 96);
 
-    ctx.fillStyle = "#bfdbfe";
-    ctx.font = '600 19px "Trebuchet MS"';
-    ctx.fillText("clone, commit, push, merge e conquiste seu proprio tile lendario.", 54, 152);
-
-    drawHudCard(584, 48, 104, 78, "SCORE", state.score, "#f97316");
-    drawHudCard(702, 48, 104, 78, "BEST", state.best, "#0f766e");
+    drawHudCard(584, 18, 104, 78, "SCORE", state.score, "#f97316");
+    drawHudCard(702, 18, 104, 78, "BEST", state.best, "#0f766e");
     drawRestartButton();
 
-    drawRoundedRect(236, 182, 570, 52, 16, "rgba(255,255,255,0.08)");
+    drawRoundedRect(252, 108, 522, 36, 14, "rgba(255,255,255,0.08)");
     ctx.fillStyle = "#f8fafc";
-    ctx.font = '700 20px "Trebuchet MS"';
+    ctx.font = '700 18px "Trebuchet MS"';
     ctx.textAlign = "left";
-    ctx.fillText(state.message, 262, 214);
+    ctx.fillText(state.message, 270, 133);
   }
 
   function drawMenuOverlay() {
@@ -877,7 +873,12 @@
   }
 
   function resizeCanvas() {
-    const size = Math.min(window.innerWidth - 20, window.innerHeight - 80, 860);
+    const mobile = window.innerWidth <= 520;
+    const size = Math.min(
+      window.innerWidth - (mobile ? 4 : 20),
+      window.innerHeight - (mobile ? 56 : 80),
+      860
+    );
     canvas.style.width = `${Math.max(320, size)}px`;
     canvas.style.height = `${Math.max(320, size)}px`;
   }
@@ -930,6 +931,7 @@
   }
 
   function handlePointerDown(event) {
+    if (event.target.closest && event.target.closest("a, button")) return;
     sounds.init();
     const point = toCanvasPoint(event);
     state.pointer = {
@@ -1077,10 +1079,10 @@
     if (map[key]) handleMoveKey(map[key]);
   });
 
-  canvas.addEventListener("pointerdown", handlePointerDown);
-  canvas.addEventListener("pointermove", handlePointerMove);
-  canvas.addEventListener("pointerup", handlePointerUp);
-  canvas.addEventListener("pointercancel", () => {
+  document.addEventListener("pointerdown", handlePointerDown);
+  document.addEventListener("pointermove", handlePointerMove);
+  document.addEventListener("pointerup", handlePointerUp);
+  document.addEventListener("pointercancel", () => {
     state.pointer = null;
   });
   canvas.addEventListener("click", handlePointerClick);
