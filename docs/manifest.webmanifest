@@ -1,0 +1,21 @@
+{
+  "name": "alankon Gaming",
+  "short_name": "Gaming",
+  "description": "Menu autoral com Git Grid 2048 e Aprender Teclas.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#020617",
+  "theme_color": "#0f766e",
+  "categories": ["games", "education"],
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "static/icons/alankon-gaming-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

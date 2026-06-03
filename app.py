@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from flask_wtf.csrf import CSRFProtect
 import os
 import signal
@@ -134,6 +134,26 @@ def jogo_2048():
 @app.route("/aprender-teclas")
 def jogo_aprender_teclas():
     return render_template("learn_keys.html")
+
+
+@app.route("/manifest.webmanifest")
+def manifest_file():
+    return send_from_directory(
+        os.path.dirname(__file__),
+        "manifest.webmanifest",
+        mimetype="application/manifest+json",
+    )
+
+
+@app.route("/service-worker.js")
+def service_worker_file():
+    response = send_from_directory(
+        os.path.dirname(__file__),
+        "service-worker.js",
+        mimetype="application/javascript",
+    )
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
 
 
 @app.route("/health")

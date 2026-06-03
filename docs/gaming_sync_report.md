@@ -37,3 +37,10 @@ Operational report detailing the validation and synchronization steps performed 
 - Expanded and centered the 2048 board on narrow screens.
 - Moved 2048 swipe capture to the full document so gestures work outside the canvas.
 - Rebuilt `docs/` and validated local Flask pages plus the generated static pages with Playwright.
+
+### 5. Multiplatform PWA Pass v11
+- Added `manifest.webmanifest`, root `service-worker.js`, `static/platform.js` and an authorial SVG app icon.
+- Exposed Flask routes for `/manifest.webmanifest` and `/service-worker.js`, with service worker scope allowed at the app root.
+- Added mobile/iOS app metadata, `viewport-fit=cover`, safe-area CSS and dynamic `--app-height` handling.
+- Fixed 2048 mobile top alignment after validation showed excess empty space on portrait phones.
+- Rebuilt `docs/` and validated Flask plus static GitHub Pages output across phone portrait, phone landscape, tablet and desktop-wide Playwright scenarios.

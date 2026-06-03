@@ -8,6 +8,7 @@ app.config['APPLICATION_ROOT'] = '/'
 app.config['PREFERRED_URL_SCHEME'] = 'http'
 
 client = app.test_client()
+PRESERVED_DOCS = ("gaming_sync_report.md",)
 
 routes = {
     "/": "index.html",
@@ -16,13 +17,28 @@ routes = {
 }
 
 # Ensure docs directory exists
+preserved_files = {}
 if os.path.exists("docs"):
+    for filename in PRESERVED_DOCS:
+        path = os.path.join("docs", filename)
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as existing_file:
+                preserved_files[filename] = existing_file.read()
     shutil.rmtree("docs")
 os.makedirs("docs", exist_ok=True)
 
 # Copy static directory to docs/static
 shutil.copytree("static", "docs/static")
 print("Copied static assets to docs/static")
+
+for root_asset in ("manifest.webmanifest", "service-worker.js"):
+    shutil.copy2(root_asset, os.path.join("docs", root_asset))
+    print(f"Copied {root_asset} to docs/{root_asset}")
+
+for filename, content in preserved_files.items():
+    with open(os.path.join("docs", filename), "w", encoding="utf-8") as preserved_file:
+        preserved_file.write(content)
+    print(f"Preserved docs/{filename}")
 
 # Render pages and save to docs
 with app.app_context():
@@ -37,6 +53,7 @@ with app.app_context():
         # Replace absolute slash links with relative links to work perfectly on GitHub Pages
         html = html.replace('href="/static/', 'href="static/')
         html = html.replace('src="/static/', 'src="static/')
+        html = html.replace('href="/manifest.webmanifest"', 'href="manifest.webmanifest"')
         html = html.replace('href="/2048"', 'href="2048.html"')
         html = html.replace('href="/aprender-teclas"', 'href="aprender-teclas.html"')
         html = html.replace('href="/"', 'href="index.html"')

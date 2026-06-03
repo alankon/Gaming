@@ -17,6 +17,7 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  min-height: var(--app-height, 100vh);
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   background:
     linear-gradient(135deg, rgba(255, 216, 77, 0.42), transparent 30%),
@@ -26,7 +27,8 @@ body {
 }
 
 body {
-  padding: 14px;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  touch-action: manipulation;
 }
 
 .keys-shell {
@@ -60,6 +62,9 @@ body {
   color: #026aa7;
   text-decoration: none;
   font-weight: 800;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .live-panel {
@@ -82,6 +87,7 @@ body {
   box-shadow: 0 24px 60px rgba(32, 48, 71, 0.18);
   text-align: center;
   padding: 18px;
+  touch-action: none;
 }
 
 .fun-card::before,
@@ -255,6 +261,7 @@ body {
   font-weight: 900;
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(32, 48, 71, 0.08);
+  touch-action: manipulation;
 }
 
 .key-btn.active {
@@ -437,4 +444,3 @@ body {
     top: 12px;
   }
 }
-
