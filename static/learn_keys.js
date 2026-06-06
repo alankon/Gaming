@@ -8,7 +8,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v12-instant-random";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v13-fada-label";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
@@ -74,8 +74,6 @@
     8: { emoji: "🐙", label: "Oito tentaculos do polvo", sound: "bubble" },
     9: { emoji: "🍦", label: "Nove de sorvete", sound: "ding" }
   };
-  FUN_MAP.F = { emoji: "\u{1F9DA}\u200D\u2640\uFE0F", label: "F de fada mulher", sound: "magic" };
-
   const state = {
     pressCount: 0,
     lastKey: "?",
@@ -756,7 +754,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e fada mulher. Espaco mostra estrela, seta para baixo chama o burrinho, e Ctrl/outras teclas nao mapeadas sorteiam amiguinhos com som imediato."
+      note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e fada. Espaco mostra estrela, seta para baixo chama o burrinho, e Ctrl/outras teclas nao mapeadas sorteiam amiguinhos com som imediato."
     });
   };
 
