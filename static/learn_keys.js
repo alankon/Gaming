@@ -8,7 +8,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v13-fada-label";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v14-foca-label";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
@@ -42,7 +42,7 @@
     C: { emoji: "🐶", label: "C de cachorro", sound: "woof" },
     D: { emoji: "🐉", label: "D de dragao", sound: "dragon" },
     E: { emoji: "🐘", label: "E de elefante", sound: "trumpet" },
-    F: { emoji: "🧚", label: "F de fada", sound: "magic" },
+    F: { emoji: "🦭", label: "F de Foca", sound: "splash" },
     G: { emoji: "🐱", label: "G de gato", sound: "meow" },
     H: { emoji: "🦛", label: "H de hipopotamo", sound: "plop" },
     I: { emoji: "🏝️", label: "I de ilha", sound: "wind" },
@@ -517,6 +517,11 @@
           addSlide(360, 720, t, 0.12, "sine", 0.08);
           addSlide(430, 860, t + 0.12, 0.12, "sine", 0.07);
         },
+        splash: () => {
+          addNoise(t, 0.16, 0.12, 780);
+          addSlide(260, 620, t + 0.03, 0.16, "sine", 0.1);
+          addSlide(420, 820, t + 0.16, 0.12, "sine", 0.08);
+        },
         boing: () => addSlide(260, 780, t, 0.22, "triangle", 0.12),
         bounce: () => {
           addSlide(380, 180, t, 0.14, "sine", 0.11);
@@ -754,7 +759,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e fada. Espaco mostra estrela, seta para baixo chama o burrinho, e Ctrl/outras teclas nao mapeadas sorteiam amiguinhos com som imediato."
+      note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e foca. Espaco mostra estrela, seta para baixo chama o burrinho, e Ctrl/outras teclas nao mapeadas sorteiam amiguinhos com som imediato."
     });
   };
 
