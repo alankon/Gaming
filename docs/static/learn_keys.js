@@ -8,7 +8,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v10-downloaded-touch";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v11-random-unmapped";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
@@ -70,6 +70,7 @@
     8: { emoji: "🐙", label: "Oito tentaculos do polvo", sound: "bubble" },
     9: { emoji: "🍦", label: "Nove de sorvete", sound: "ding" }
   };
+  FUN_MAP.F = { emoji: "\u{1F9DA}\u200D\u2640\uFE0F", label: "F de fada mulher", sound: "magic" };
 
   const state = {
     pressCount: 0,
@@ -598,9 +599,9 @@
     lastKeyEl.textContent = fun.fallback ? "!" : fun.star ? "★" : char;
     pressCountEl.textContent = String(state.pressCount);
     hintTextEl.textContent = fun.star
-      ? "Tecla nao mapeada voltou para a estrelinha inicial."
+      ? "Espaco chamou a estrelinha inicial."
       : fun.fallback
-      ? "As setas chamaram o burrinho surpresa."
+      ? "A seta para baixo chamou o burrinho surpresa."
       : "Toque, arraste ou aperte outra tecla para chamar outro amiguinho.";
     funEmojiEl.textContent = fun.emoji;
     funLabelEl.textContent = fun.fallback || fun.star ? `${fun.label}: ${displayKey}` : fun.label;
@@ -651,15 +652,11 @@
       registerChar("STAR:space", "espaco");
       return;
     }
-    if (event.key === "Enter") {
-      registerChar("STAR:enter", "enter");
-      return;
-    }
-    if (event.key.startsWith("Arrow")) {
+    if (event.key === "ArrowDown") {
       registerChar(`ARROW:${labelForOtherKey(event.key)}`, labelForOtherKey(event.key));
       return;
     }
-    registerChar(`STAR:${labelForOtherKey(event.key)}`, labelForOtherKey(event.key));
+    triggerRandomUnmapped(labelForOtherKey(event.key));
   }
 
   function buildTouchKeyboard() {
@@ -691,6 +688,11 @@
     const char = ALLOWED[Math.floor(Math.random() * ALLOWED.length)];
     registerChar(char, char, inputSource);
     return true;
+  }
+
+  function triggerRandomUnmapped(displayKey) {
+    const char = ALLOWED[Math.floor(Math.random() * ALLOWED.length)];
+    registerChar(char, char, `tecla aleatoria: ${displayKey}`);
   }
 
   document.addEventListener("pointerdown", (event) => {
@@ -737,7 +739,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam palavras em portugues do Brasil; J continua jacare. Toques e arrastos fora dos botoes chamam um amiguinho aleatorio. Sons baixados sao a fonte principal, com imitacoes suaves como fallback."
+      note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e fada mulher. Espaco mostra estrela, seta para baixo chama o burrinho, e qualquer outra tecla nao mapeada sorteia um amiguinho com som aleatorio."
     });
   };
 
