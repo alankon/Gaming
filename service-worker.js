@@ -1,4 +1,4 @@
-const CACHE_NAME = "alankon-gaming-v11-platform";
+const CACHE_NAME = "alankon-gaming-v12-refresh";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -44,13 +44,37 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const network = fetch(event.request)
+  const request = event.request;
+  const url = new URL(request.url);
+  const preferNetwork =
+    request.mode === "navigate" ||
+    request.destination === "script" ||
+    request.destination === "style" ||
+    url.pathname.endsWith(".html") ||
+    url.searchParams.has("v");
+
+  if (preferNetwork) {
+    event.respondWith(
+      fetch(request)
         .then((response) => {
           if (response && response.ok) {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      const network = fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           }
           return response;
         })
