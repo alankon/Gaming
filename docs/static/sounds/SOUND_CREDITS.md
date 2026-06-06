@@ -13,6 +13,8 @@ Public/open sounds used by Aprender Teclas.
 - `cow-moo-wikimedia.ogg`: "Single Cow Moo.ogg" from Wikimedia Commons. Direct media source: https://upload.wikimedia.org/wikipedia/commons/a/a5/Single_Cow_Moo.ogg.
 - `duck-quack-wikimedia.ogg`: mallard recording from Wikimedia Commons. Direct media source: https://upload.wikimedia.org/wikipedia/commons/f/fa/Anas_platyrhynchos_-_Mallard_-_XC62258.ogg.
 - `sheep-baa-wikimedia.ogg`: "Sheep bleating.ogg" from Wikimedia Commons. Direct media source: https://upload.wikimedia.org/wikipedia/commons/1/13/Sheep_bleating.ogg.
+- `windchimes-public-domain.ogg`: "Windchimes.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Windchimes.ogg. License stated on source page: Public Domain / released by copyright holder.
+- `donkey-bray-wikimedia.oga`: "Personality-of-Wild-Male-Crested-Macaques-(Macaca-nigra)-pone.0069383.s002.oga" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Personality-of-Wild-Male-Crested-Macaques-(Macaca-nigra)-pone.0069383.s002.oga. License stated on source page: CC BY 2.5.
 
 `rooster-wikimedia.ogg` is an unused candidate downloaded by `fetch_sounds.py`. Record its selected Wikimedia source metadata before wiring it into the game.
 

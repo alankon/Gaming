@@ -10,7 +10,7 @@
   <title>alankon Gaming | Aprender Teclas</title>
   <link rel="manifest" href="{{ url_for('manifest_file') }}">
   <link rel="icon" href="{{ url_for('static', filename='icons/alankon-gaming-icon.svg') }}" type="image/svg+xml">
-  <link rel="stylesheet" href="{{ url_for('static', filename='learn_keys.css', v='sound-v11') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='learn_keys.css', v='sound-v12') }}">
   <script src="{{ url_for('static', filename='platform.js') }}" defer></script>
 </head>
 <body>
@@ -32,7 +32,7 @@
           <div class="spark spark-c"></div>
         </div>
         <p class="fun-label" id="fun-label">Aperte uma tecla para aparecer um amiguinho animado.</p>
-        <p class="hint" id="hint-text">Espaco mostra a estrela. Seta para baixo chama o burrinho. Outras teclas soltas sorteiam surpresas.</p>
+        <p class="hint" id="hint-text">Espaco mostra a estrela. Seta para baixo chama o burrinho. Ctrl e outras teclas soltas sorteiam surpresas.</p>
       </div>
       <div class="stats">
         <span>Total de teclas: <strong id="press-count">0</strong></span>
@@ -45,6 +45,6 @@
       <div id="touch-keys" class="touch-keys" aria-label="Teclado virtual"></div>
     </section>
   </main>
-  <script src="{{ url_for('static', filename='learn_keys.js', v='sound-v11') }}"></script>
+  <script src="{{ url_for('static', filename='learn_keys.js', v='sound-v12') }}"></script>
 </body>
 </html>

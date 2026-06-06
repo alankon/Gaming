@@ -8,14 +8,17 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v11-random-unmapped";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v12-instant-random";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
     balloon: "static/sounds/balloon-pop.ogg",
     bear: "static/sounds/bear-growl.ogg",
     buzz: "static/sounds/bee-buzz-public-domain.ogg",
+    ding: "static/sounds/windchimes-public-domain.ogg",
+    donkey: "static/sounds/donkey-bray-wikimedia.oga",
     dragon: "static/sounds/big-cat-roar-public-domain.ogg",
+    magic: "static/sounds/windchimes-public-domain.ogg",
     meow: "static/sounds/cat-meow-public-domain.mp3",
     monkey: "static/sounds/cute-monkey-chatter.mp3",
     moo: "static/sounds/cow-moo-wikimedia.ogg",
@@ -26,6 +29,7 @@
     ribbit: "static/sounds/frog-croak-open.oga",
     roar: "static/sounds/big-cat-roar-public-domain.ogg",
     tiger: "static/sounds/big-cat-roar-public-domain.ogg",
+    wind: "static/sounds/windchimes-public-domain.ogg",
     zebra: "static/sounds/zebra-barking.ogg"
   };
   const publicSoundCache = new Map();
@@ -140,7 +144,10 @@
       balloon: 0.5,
       bear: 0.42,
       buzz: 0.34,
+      ding: 0.44,
+      donkey: 0.52,
       dragon: 0.48,
+      magic: 0.44,
       meow: 0.58,
       monkey: 0.45,
       moo: 0.5,
@@ -151,6 +158,7 @@
       ribbit: 0.56,
       roar: 0.46,
       tiger: 0.46,
+      wind: 0.38,
       zebra: 0.5
     };
     return volumes[kind] || 0.52;
@@ -173,13 +181,22 @@
     const audio = publicAudioFor(kind);
     if (!audio) return false;
     try {
+      playBufferSound(kind);
       activePublicAudio = audio;
       audio.pause();
-      audio.currentTime = kind === "buzz" ? 0.7 : 0;
+      const offsets = {
+        balloon: 0.04,
+        buzz: 0.7,
+        ding: 0.12,
+        donkey: 0.02,
+        magic: 0.12,
+        wind: 0.12
+      };
+      audio.currentTime = offsets[kind] || 0;
       const playPromise = audio.play();
       state.audioReady = true;
       state.audioState = "playing-downloaded-file";
-      state.lastSoundSource = "downloaded-file";
+      state.lastSoundSource = "downloaded-file+instant";
       audioStatusEl.textContent = `Som baixado: ${kind}`;
       if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => {
@@ -641,7 +658,7 @@
   }
 
   function onKeyDown(event) {
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if ((event.ctrlKey && event.key !== "Control") || (event.metaKey && event.key !== "Meta") || (event.altKey && event.key !== "Alt")) return;
     const normalized = normalizeKey(event.key);
     event.preventDefault();
     if (normalized) {
@@ -739,7 +756,7 @@
       audio_state: state.audioState,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
-      note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e fada mulher. Espaco mostra estrela, seta para baixo chama o burrinho, e qualquer outra tecla nao mapeada sorteia um amiguinho com som aleatorio."
+      note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e fada mulher. Espaco mostra estrela, seta para baixo chama o burrinho, e Ctrl/outras teclas nao mapeadas sorteiam amiguinhos com som imediato."
     });
   };
 
