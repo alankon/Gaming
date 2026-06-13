@@ -179,9 +179,8 @@ kill_all() {
     kill_by_port "$port"
     kill_windows_by_port "$port"
   else
-    for port in $(seq 5000 5999); do
-      kill_windows_by_port "$port"
-    done
+    echo "No tracked port file found; skipped broad 5000-5999 port kill."
+    echo "Use './server.sh free-port 5000' to release a specific port."
   fi
   rm -f "$PID_FILE"
   rm -f "$PORT_FILE"

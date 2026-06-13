@@ -2,12 +2,12 @@
 """Fetch animal sounds from Wikimedia Commons and Pixabay for Aprender Teclas."""
 import json
 import os
-import subprocess
-import sys
 import urllib.request
 import urllib.parse
 
 SOUND_DIR = os.path.join(os.path.dirname(__file__), "static", "sounds")
+ALLOWED_DOWNLOAD_HOSTS = {"commons.wikimedia.org", "upload.wikimedia.org"}
+MAX_SOUND_BYTES = 2 * 1024 * 1024
 
 # Known good Wikimedia Commons files with confirmed URLs from API
 WIKIMEDIA_DOWNLOADS = {
@@ -28,6 +28,13 @@ SEARCH_TERMS = [
     ("magic sparkle chime", "magic"),
 ]
 
+def safe_request(url):
+    """Only fetch expected HTTPS sound sources."""
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname not in ALLOWED_DOWNLOAD_HOSTS:
+        raise ValueError(f"Blocked unexpected URL: {url}")
+    return urllib.request.Request(url, headers={"User-Agent": "AlankonGaming/1.0"})
+
 def wikimedia_search_audio(query, limit=5):
     """Search Wikimedia Commons for audio files."""
     url = (
@@ -42,8 +49,8 @@ def wikimedia_search_audio(query, limit=5):
         })
     )
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "AlankonGaming/1.0"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        req = safe_request(url)
+        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
             data = json.loads(resp.read())
         results = []
         for item in data.get("query", {}).get("search", []):
@@ -69,8 +76,8 @@ def wikimedia_get_url(file_title):
         })
     )
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "AlankonGaming/1.0"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        req = safe_request(url)
+        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310
             data = json.loads(resp.read())
         pages = data.get("query", {}).get("pages", {})
         for page in pages.values():
@@ -83,9 +90,11 @@ def wikimedia_get_url(file_title):
 def download_file(url, dest_path):
     """Download a file from url to dest_path."""
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "AlankonGaming/1.0"})
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            data = resp.read()
+        req = safe_request(url)
+        with urllib.request.urlopen(req, timeout=30) as resp:  # nosec B310
+            data = resp.read(MAX_SOUND_BYTES + 1)
+        if len(data) > MAX_SOUND_BYTES:
+            raise ValueError("sound file is larger than 2 MB")
         with open(dest_path, "wb") as f:
             f.write(data)
         size_kb = len(data) / 1024

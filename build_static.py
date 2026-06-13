@@ -8,7 +8,7 @@ app.config['APPLICATION_ROOT'] = '/'
 app.config['PREFERRED_URL_SCHEME'] = 'http'
 
 client = app.test_client()
-PRESERVED_DOCS = ("gaming_sync_report.md",)
+PRESERVED_DOCS = ("gaming_sync_report.md", "SECURITY_AUDIT.md")
 
 routes = {
     "/": "index.html",

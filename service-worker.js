@@ -1,4 +1,4 @@
-const CACHE_NAME = "alankon-gaming-v15-foca-label";
+const CACHE_NAME = "alankon-gaming-v16-security";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -46,6 +46,7 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const request = event.request;
   const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
   const preferNetwork =
     request.mode === "navigate" ||
     request.destination === "script" ||
