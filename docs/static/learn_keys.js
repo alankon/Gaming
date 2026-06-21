@@ -8,7 +8,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v14-foca-label";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v15-single-source";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
@@ -179,7 +179,6 @@
     const audio = publicAudioFor(kind);
     if (!audio) return false;
     try {
-      playBufferSound(kind);
       activePublicAudio = audio;
       audio.pause();
       const offsets = {
@@ -194,7 +193,7 @@
       const playPromise = audio.play();
       state.audioReady = true;
       state.audioState = "playing-downloaded-file";
-      state.lastSoundSource = "downloaded-file+instant";
+      state.lastSoundSource = "downloaded-file";
       audioStatusEl.textContent = `Som baixado: ${kind}`;
       if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => {
@@ -757,6 +756,7 @@
       press_count: state.pressCount,
       audio_ready: state.audioReady,
       audio_state: state.audioState,
+      active_voice_count: (activePublicAudio && !activePublicAudio.paused ? 1 : 0) + activeSoundNodes.size,
       sound_engine_version: SOUND_ENGINE_VERSION,
       animated_visual: true,
       note: "A-Z e 0-9 usam palavras em portugues do Brasil; F e foca. Espaco mostra estrela, seta para baixo chama o burrinho, e Ctrl/outras teclas nao mapeadas sorteiam amiguinhos com som imediato."
