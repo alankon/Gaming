@@ -170,15 +170,15 @@ def _is_port_available(port, host="127.0.0.1"):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
-            sock.bind((host if host != "0.0.0.0" else "127.0.0.1", port))  # nosec B104
+            sock.bind((host, port))  # nosec B104
         except OSError:
             return False
     return True
 
 
-def _find_free_port(start_port=5000):
+def _find_free_port(start_port=5000, host="127.0.0.1"):
     for port in range(max(5000, start_port), 6000):
-        if _is_port_available(port):
+        if _is_port_available(port, host):
             return port
     raise RuntimeError("No free port found in range 5000-5999")
 
@@ -193,10 +193,10 @@ def _requested_port(default=5000):
 
 
 def _requested_host():
-    host = os.getenv("HOST", "127.0.0.1").strip() or "127.0.0.1"
+    host = os.getenv("HOST", "0.0.0.0").strip() or "0.0.0.0"  # nosec B104
     if host in LOCAL_HOSTS:
         return host
-    if host == "0.0.0.0" and os.getenv("ALLOW_LAN") == "1":  # nosec B104
+    if host == "0.0.0.0" and os.getenv("ALLOW_LAN", "1") == "1":  # nosec B104
         return host
     return "127.0.0.1"
 
@@ -211,16 +211,19 @@ def _write_runtime_files(port):
         pass
 
 
+@app.route("/index.html")
 @app.route("/")
 def pagina_inicial():
     return render_template("index.html")
 
 
+@app.route("/2048.html")
 @app.route("/2048")
 def jogo_2048():
     return render_template("game_2048.html")
 
 
+@app.route("/aprender-teclas.html")
 @app.route("/aprender-teclas")
 def jogo_aprender_teclas():
     return render_template("learn_keys.html")
@@ -276,7 +279,7 @@ if __name__ == "__main__":
     requested_port = _requested_port()
     host = _requested_host()
     _stop_tracked_server()
-    port = requested_port if _is_port_available(requested_port, host) else _find_free_port(requested_port + 1)
+    port = requested_port if _is_port_available(requested_port, host) else _find_free_port(requested_port + 1, host)
     os.environ["PORT"] = str(port)
     _write_runtime_files(port)
     app.run(host, port=port, debug=False)

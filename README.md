@@ -20,14 +20,31 @@ O build atualiza `docs/`, que e a pasta publicada no GitHub Pages.
 
 ```bash
 python -m pip install -r requirements.txt
-python app.py
+./server.sh start
 ```
 
-Abra `http://127.0.0.1:5000` para o menu de jogos.
+O servidor escuta a rede local por padrao e escolhe automaticamente uma porta livre entre `5000-5999`. Consulte a porta ativa com:
+
+```bash
+./server.sh status
+```
+
+Abra a URL exibida pelo status:
+
+- nesta maquina: `http://127.0.0.1:<porta>`
+- direto no WSL/Linux: `http://<ip-wsl>:<porta>` (normalmente `172.x.x.x`)
+- pelo IP LAN do Windows: `http://192.168.15.99:<porta>` depois de configurar o portproxy
+
+No WSL/Linux, o atalho recomendado e:
+
+```bash
+chmod +x start.sh stop.sh server.sh
+./start.sh
+```
 
 ## Encerrar totalmente o servidor
 
-Temos tres formas agora:
+O gerenciador unico no WSL e `server.sh`; `start.sh` e `stop.sh` sao apenas atalhos de compatibilidade sem logica duplicada:
 
 ```bash
 # via script no WSL/Linux
@@ -54,18 +71,35 @@ No Windows (PowerShell), use o script equivalente:
 
 Tambem em PowerShell o `start` procura sempre uma porta livre em `5000-5999`.
 
+Para acessar o servidor que esta rodando no WSL pelo IP LAN do Windows
+(`http://192.168.15.99:5000/`, por exemplo), abra o PowerShell como
+Administrador e configure o encaminhamento:
+
+```powershell
+cd E:\WSL\repos\Gaming
+.\server.ps1 lan-proxy 5000
+```
+
+No WSL, `./server.sh lan-proxy 5000` mostra o mesmo passo com os IPs detectados.
+Sem esse encaminhamento, o Flask pode aparecer como `0.0.0.0` dentro do WSL e
+mesmo assim recusar conexoes no IP `192.168.*` do Windows.
+
 ```bash
 # via endpoint local (somente localhost)
 PORT=5001 # exemplo
 curl http://127.0.0.1:$PORT/status
-curl http://127.0.0.1:$PORT/quit
+curl -X POST http://127.0.0.1:$PORT/quit
 # aliases: /exit e /kill
 ```
 
 Importante:
 - No WSL/Linux use `./server.sh ...`
+- Para iniciar diretamente, use `./start.sh`
+- Para reiniciar explicitamente, use `./server.sh restart`
+- Para parar, use `./stop.sh`
 - No PowerShell use `.\\server.ps1 ...`
 - Se a 5000 estiver presa por outro servico, use `free-port 5000` no ambiente correspondente.
+- Se outro aparelho nao abrir a URL LAN do Windows, rode `.\\server.ps1 lan-proxy <porta>` como Administrador e confirme que ambos estao na mesma rede.
 
 ## Validacao
 
