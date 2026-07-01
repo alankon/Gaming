@@ -15,7 +15,12 @@ Public/open sounds used by Aprender Teclas.
 - `sheep-baa-wikimedia.ogg`: "Sheep bleating.ogg" from Wikimedia Commons. Direct media source: https://upload.wikimedia.org/wikipedia/commons/1/13/Sheep_bleating.ogg.
 - `windchimes-public-domain.ogg`: "Windchimes.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Windchimes.ogg. License stated on source page: Public Domain / released by copyright holder.
 - `donkey-bray-wikimedia.oga`: "Personality-of-Wild-Male-Crested-Macaques-(Macaca-nigra)-pone.0069383.s002.oga" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Personality-of-Wild-Male-Crested-Macaques-(Macaca-nigra)-pone.0069383.s002.oga. License stated on source page: CC BY 2.5.
+- `alligator-bellow-pd.ogg`: "Alligatorbellow1.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Alligatorbellow1.ogg. License stated on source page: Public Domain / U.S. Fish and Wildlife Service.
+- `boing-cc0.ogg`: "Nl-boing.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Nl-boing.ogg. License stated on source page: CC0 1.0.
+- `boing-raw-cc-by.ogg`: "Boing raw.ogg" from Wikimedia Commons/Freesound. Source: https://commons.wikimedia.org/wiki/File:Boing_raw.ogg. License stated on source page: CC BY 4.0.
+- `robot-buzzing-pd.ogg`: "Little robot buzzing.ogg" from Wikimedia Commons/PDSounds. Source: https://commons.wikimedia.org/wiki/File:Little_robot_buzzing.ogg. License stated on source page: Public Domain.
+- `seal-calls-cc-by.ogg`: "Arctocephalus forsteri - sound.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Arctocephalus_forsteri_-_sound.ogg. License stated on source page: CC BY 4.0, attribution Department of Conservation (NZ).
 
-`rooster-wikimedia.ogg` is an unused candidate downloaded by `fetch_sounds.py`. Record its selected Wikimedia source metadata before wiring it into the game.
+`rooster-wikimedia.ogg` and `boing-raw-cc-by.ogg` are unused candidates downloaded by `fetch_sounds.py`. Record selected source metadata before wiring any other candidate into the game.
 
 The game keeps procedural WebAudio fallbacks for browsers that cannot load or play one of these files.

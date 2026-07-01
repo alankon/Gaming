@@ -14,6 +14,11 @@ WIKIMEDIA_DOWNLOADS = {
     "sheep-baa-wikimedia.ogg": "https://upload.wikimedia.org/wikipedia/commons/1/13/Sheep_bleating.ogg",
     "cow-moo-wikimedia.ogg": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Single_Cow_Moo.ogg",
     "duck-quack-wikimedia.ogg": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Anas_platyrhynchos_-_Mallard_-_XC62258.ogg",
+    "alligator-bellow-pd.ogg": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Alligatorbellow1.ogg",
+    "boing-cc0.ogg": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Nl-boing.ogg",
+    "boing-raw-cc-by.ogg": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Boing_raw.ogg",
+    "robot-buzzing-pd.ogg": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Little_robot_buzzing.ogg",
+    "seal-calls-cc-by.ogg": "https://upload.wikimedia.org/wikipedia/commons/5/56/Arctocephalus_forsteri_-_sound.ogg",
 }
 
 # Search Wikimedia API for more audio files

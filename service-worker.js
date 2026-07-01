@@ -1,4 +1,4 @@
-const CACHE_NAME = "alankon-gaming-v17-single-audio";
+const CACHE_NAME = "alankon-gaming-v18-more-public-sounds";
 const CORE_ASSETS = [
   "./",
   "./index.html",

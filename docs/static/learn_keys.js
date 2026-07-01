@@ -8,22 +8,29 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v15-single-source";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v16-more-public-sounds";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
     balloon: "static/sounds/balloon-pop.ogg",
     bear: "static/sounds/bear-growl.ogg",
+    boing: "static/sounds/boing-cc0.ogg",
+    bounce: "static/sounds/boing-cc0.ogg",
+    bubble: "static/sounds/balloon-pop.ogg",
     buzz: "static/sounds/bee-buzz-public-domain.ogg",
     ding: "static/sounds/windchimes-public-domain.ogg",
     donkey: "static/sounds/donkey-bray-wikimedia.oga",
     dragon: "static/sounds/big-cat-roar-public-domain.ogg",
+    jacare: "static/sounds/alligator-bellow-pd.ogg",
     magic: "static/sounds/windchimes-public-domain.ogg",
     meow: "static/sounds/cat-meow-public-domain.mp3",
     monkey: "static/sounds/cute-monkey-chatter.mp3",
     moo: "static/sounds/cow-moo-wikimedia.ogg",
+    pop: "static/sounds/balloon-pop.ogg",
     quack: "static/sounds/duck-quack-wikimedia.ogg",
+    robot: "static/sounds/robot-buzzing-pd.ogg",
     sheep: "static/sounds/sheep-baa-wikimedia.ogg",
+    splash: "static/sounds/seal-calls-cc-by.ogg",
     woof: "static/sounds/dog-bark-wikimedia.ogg",
     trumpet: "static/sounds/elephant-trumpet-cc0.ogg",
     ribbit: "static/sounds/frog-croak-open.oga",
@@ -35,6 +42,7 @@
   const publicSoundCache = new Map();
   const activeSoundNodes = new Set();
   let activePublicAudio = null;
+  let activePublicStopTimer = null;
   let soundTicket = 0;
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelha", sound: "buzz" },
@@ -121,6 +129,10 @@
 
   function stopCurrentSound() {
     soundTicket += 1;
+    if (activePublicStopTimer) {
+      clearTimeout(activePublicStopTimer);
+      activePublicStopTimer = null;
+    }
     if (activePublicAudio) {
       try {
         activePublicAudio.pause();
@@ -149,15 +161,22 @@
       meow: 0.58,
       monkey: 0.45,
       moo: 0.5,
+      pop: 0.46,
       quack: 0.5,
+      robot: 0.34,
       sheep: 0.48,
+      splash: 0.34,
       woof: 0.6,
       trumpet: 0.5,
       ribbit: 0.56,
       roar: 0.46,
       tiger: 0.46,
       wind: 0.38,
-      zebra: 0.5
+      zebra: 0.5,
+      jacare: 0.34,
+      boing: 0.46,
+      bounce: 0.46,
+      bubble: 0.42
     };
     return volumes[kind] || 0.52;
   }
@@ -183,14 +202,44 @@
       audio.pause();
       const offsets = {
         balloon: 0.04,
+        boing: 0.1,
+        bounce: 0.1,
+        bubble: 0.03,
         buzz: 0.7,
         ding: 0.12,
         donkey: 0.02,
+        jacare: 0.28,
         magic: 0.12,
+        pop: 0.03,
+        robot: 0.18,
+        splash: 2.1,
         wind: 0.12
       };
       audio.currentTime = offsets[kind] || 0;
       const playPromise = audio.play();
+      const maxDurations = {
+        boing: 0.95,
+        bounce: 0.95,
+        bubble: 0.42,
+        jacare: 1.55,
+        pop: 0.38,
+        robot: 1.25,
+        splash: 1.45
+      };
+      const maxDuration = maxDurations[kind];
+      if (maxDuration) {
+        activePublicStopTimer = setTimeout(() => {
+          if (ticket !== soundTicket || activePublicAudio !== audio) return;
+          try {
+            audio.pause();
+            audio.currentTime = 0;
+          } catch {}
+          activePublicAudio = null;
+          activePublicStopTimer = null;
+          state.audioState = "ready";
+          audioStatusEl.textContent = "Som pronto";
+        }, Math.round(maxDuration * 1000));
+      }
       state.audioReady = true;
       state.audioState = "playing-downloaded-file";
       state.lastSoundSource = "downloaded-file";
