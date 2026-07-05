@@ -18,6 +18,7 @@ Public/open sounds used by Aprender Teclas.
 - `alligator-bellow-pd.ogg`: "Alligatorbellow1.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Alligatorbellow1.ogg. License stated on source page: Public Domain / U.S. Fish and Wildlife Service.
 - `boing-cc0.ogg`: "Nl-boing.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Nl-boing.ogg. License stated on source page: CC0 1.0.
 - `boing-raw-cc-by.ogg`: "Boing raw.ogg" from Wikimedia Commons/Freesound. Source: https://commons.wikimedia.org/wiki/File:Boing_raw.ogg. License stated on source page: CC BY 4.0.
+- `car-horn-wikimedia.ogg`: "WWS CarPrinzNSU1200C8211horn.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:WWS_CarPrinzNSU1200C8211horn.ogg. License stated on source page: CC0 1.0.
 - `robot-buzzing-pd.ogg`: "Little robot buzzing.ogg" from Wikimedia Commons/PDSounds. Source: https://commons.wikimedia.org/wiki/File:Little_robot_buzzing.ogg. License stated on source page: Public Domain.
 - `seal-calls-cc-by.ogg`: "Arctocephalus forsteri - sound.ogg" from Wikimedia Commons. Source: https://commons.wikimedia.org/wiki/File:Arctocephalus_forsteri_-_sound.ogg. License stated on source page: CC BY 4.0, attribution Department of Conservation (NZ).
 

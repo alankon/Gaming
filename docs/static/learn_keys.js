@@ -8,7 +8,7 @@
   const funLabelEl = document.getElementById("fun-label");
   const funCardEl = document.querySelector(".fun-card");
   const ALLOWED = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".split("");
-  const SOUND_ENGINE_VERSION = "animal-sounds-v16-more-public-sounds";
+  const SOUND_ENGINE_VERSION = "animal-sounds-v17-fuller-sound-map";
   const buttons = new Map();
   const PUBLIC_SOUNDS = {
     baby: "static/sounds/baby-laugh-cc-by.ogg",
@@ -18,6 +18,7 @@
     bounce: "static/sounds/boing-cc0.ogg",
     bubble: "static/sounds/balloon-pop.ogg",
     buzz: "static/sounds/bee-buzz-public-domain.ogg",
+    car: "static/sounds/car-horn-wikimedia.ogg",
     ding: "static/sounds/windchimes-public-domain.ogg",
     donkey: "static/sounds/donkey-bray-wikimedia.oga",
     dragon: "static/sounds/big-cat-roar-public-domain.ogg",
@@ -26,11 +27,15 @@
     meow: "static/sounds/cat-meow-public-domain.mp3",
     monkey: "static/sounds/cute-monkey-chatter.mp3",
     moo: "static/sounds/cow-moo-wikimedia.ogg",
+    plop: "static/sounds/balloon-pop.ogg",
     pop: "static/sounds/balloon-pop.ogg",
     quack: "static/sounds/duck-quack-wikimedia.ogg",
     robot: "static/sounds/robot-buzzing-pd.ogg",
     sheep: "static/sounds/sheep-baa-wikimedia.ogg",
+    sparkle: "static/sounds/windchimes-public-domain.ogg",
     splash: "static/sounds/seal-calls-cc-by.ogg",
+    tap: "static/sounds/boing-cc0.ogg",
+    vroom: "static/sounds/car-horn-wikimedia.ogg",
     woof: "static/sounds/dog-bark-wikimedia.ogg",
     trumpet: "static/sounds/elephant-trumpet-cc0.ogg",
     ribbit: "static/sounds/frog-croak-open.oga",
@@ -154,6 +159,7 @@
       balloon: 0.5,
       bear: 0.42,
       buzz: 0.34,
+      car: 0.42,
       ding: 0.44,
       donkey: 0.52,
       dragon: 0.48,
@@ -161,11 +167,15 @@
       meow: 0.58,
       monkey: 0.45,
       moo: 0.5,
+      plop: 0.38,
       pop: 0.46,
       quack: 0.5,
       robot: 0.34,
       sheep: 0.48,
+      sparkle: 0.42,
       splash: 0.34,
+      tap: 0.34,
+      vroom: 0.42,
       woof: 0.6,
       trumpet: 0.5,
       ribbit: 0.56,
@@ -206,13 +216,18 @@
         bounce: 0.1,
         bubble: 0.03,
         buzz: 0.7,
+        car: 0.08,
         ding: 0.12,
         donkey: 0.02,
         jacare: 0.28,
         magic: 0.12,
         pop: 0.03,
+        plop: 0.03,
         robot: 0.18,
+        sparkle: 0.12,
         splash: 2.1,
+        tap: 0.12,
+        vroom: 0.08,
         wind: 0.12
       };
       audio.currentTime = offsets[kind] || 0;
@@ -221,10 +236,15 @@
         boing: 0.95,
         bounce: 0.95,
         bubble: 0.42,
+        car: 1.1,
         jacare: 1.55,
+        plop: 0.32,
         pop: 0.38,
         robot: 1.25,
-        splash: 1.45
+        sparkle: 1.15,
+        splash: 1.45,
+        tap: 0.45,
+        vroom: 1.1
       };
       const maxDuration = maxDurations[kind];
       if (maxDuration) {
