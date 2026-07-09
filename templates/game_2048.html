@@ -13,11 +13,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='game.css') }}">
   <script src="{{ url_for('static', filename='platform.js') }}" defer></script>
 </head>
-<body>
+<body data-player-id="{{ player_summary.id }}" data-game-slug="git-grid-2048">
   <main class="shell">
     <div class="header-container">
-      <a class="back-link" href="{{ url_for('pagina_inicial') }}">← Voltar ao Menu</a>
-      <button id="toggle-sound" class="sound-btn" type="button" aria-pressed="true">Sons: Ligados 🔊</button>
+      <a class="back-link" href="{{ url_for('pagina_inicial') }}">&larr; Voltar ao portal</a>
+      <button id="toggle-sound" class="sound-btn" type="button" aria-pressed="true">Sons: Ligados</button>
     </div>
     <canvas
       id="game"

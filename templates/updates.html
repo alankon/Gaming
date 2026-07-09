@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}alankon Gaming | Atualizacoes{% endblock %}
+{% block content %}
+  <main class="platform-stack">
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">changelog vivo</p>
+          <h1>Atualizacoes da plataforma</h1>
+        </div>
+      </div>
+      <div class="timeline">
+        {% for item in update_log %}
+          <article class="timeline-item">
+            <span class="timeline-date">{{ item.date }}</span>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.summary }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}alankon Gaming | Ranking{% endblock %}
+{% block content %}
+  <main class="platform-stack">
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">rankings iniciais</p>
+          <h1>Painel competitivo da plataforma</h1>
+        </div>
+      </div>
+      <div class="split-grid">
+        <article class="leaderboard-panel">
+          <h2>Git Grid 2048</h2>
+          <ol class="leaderboard">
+            {% for row in leaderboards.git_grid %}
+              <li><span>{{ row.player_name }}</span><strong>{{ row.value }}</strong></li>
+            {% else %}
+              <li><span>Sem score ainda</span><strong>0</strong></li>
+            {% endfor %}
+          </ol>
+        </article>
+        <article class="leaderboard-panel">
+          <h2>Aprender Teclas</h2>
+          <ol class="leaderboard">
+            {% for row in leaderboards.learn_keys %}
+              <li><span>{{ row.player_name }}</span><strong>{{ row.value }}</strong></li>
+            {% else %}
+              <li><span>Sem recorde ainda</span><strong>0</strong></li>
+            {% endfor %}
+          </ol>
+        </article>
+      </div>
+      <article class="leaderboard-panel">
+        <h2>Mais ativos do portal</h2>
+        <ol class="leaderboard">
+          {% for row in leaderboards.overall %}
+            <li><span>{{ row.player_name }}</span><strong>{{ row.value }}</strong></li>
+          {% else %}
+            <li><span>Ninguem jogou ainda</span><strong>0</strong></li>
+          {% endfor %}
+        </ol>
+      </article>
+    </section>
+  </main>
+{% endblock %}

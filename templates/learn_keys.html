@@ -13,10 +13,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='learn_keys.css', v='sound-v17') }}">
   <script src="{{ url_for('static', filename='platform.js') }}" defer></script>
 </head>
-<body>
+<body data-player-id="{{ player_summary.id }}" data-game-slug="learn-keys">
   <main class="keys-shell">
     <header class="keys-header">
-      <a class="back-link" href="{{ url_for('pagina_inicial') }}">Voltar ao menu</a>
+      <a class="back-link" href="{{ url_for('pagina_inicial') }}">Voltar ao portal</a>
       <h1>Aprender Teclas</h1>
       <p>Aperte uma tecla, toque ou arraste para ver a animacao e ouvir um som fofinho.</p>
     </header>

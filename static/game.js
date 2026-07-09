@@ -159,6 +159,12 @@
   }
 
   const sounds = new SoundEffects();
+  let runStarted = false;
+  let lastReportedScore = 0;
+
+  function analytics() {
+    return window.alankonGaming || null;
+  }
 
   const state = {
     mode: "menu",
@@ -255,6 +261,9 @@
     const first = addRandomTile(state.board);
     const second = addRandomTile(state.board);
     state.justSpawned = [first, second].filter(Boolean).map((tile) => ({ ...tile, life: 0.7 }));
+    runStarted = true;
+    lastReportedScore = 0;
+    analytics()?.trackGameStart("git-grid-2048");
   }
 
   function restartGame() {
@@ -399,6 +408,7 @@
         life: 1.0
       });
       sounds.playMerge();
+      reportProgress(false);
     } else {
       sounds.playMove();
     }
@@ -440,6 +450,7 @@
       state.mode = "won";
       state.message = "alankon Gaming desbloqueado. Voce chegou no 2048.";
       sounds.playGameWon();
+      reportProgress(true);
       return;
     }
 
@@ -447,7 +458,21 @@
       state.mode = "lost";
       state.message = "Run encerrada. Bata seu best e tente outra vez.";
       sounds.playGameOver();
+      reportProgress(true);
+      return;
     }
+
+    reportProgress(false);
+  }
+
+  function reportProgress(force) {
+    if (!analytics() || !runStarted) return;
+    if (!force && state.score <= lastReportedScore) return;
+    lastReportedScore = Math.max(lastReportedScore, state.score);
+    analytics().trackGameProgress("git-grid-2048", {
+      score: state.score,
+      state: state.mode
+    });
   }
 
   function update(dt) {
@@ -1088,6 +1113,13 @@
   canvas.addEventListener("click", handlePointerClick);
   window.addEventListener("resize", resizeCanvas);
   document.addEventListener("fullscreenchange", resizeCanvas);
+  window.addEventListener("beforeunload", () => {
+    if (!analytics() || !runStarted) return;
+    analytics().trackGameProgressBeacon("git-grid-2048", {
+      score: state.score,
+      state: state.mode
+    });
+  });
 
   const soundBtn = document.getElementById("toggle-sound");
   if (soundBtn) {

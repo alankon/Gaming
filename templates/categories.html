@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}alankon Gaming | Categorias{% endblock %}
+{% block content %}
+  <main class="platform-stack">
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">arquitetura da biblioteca</p>
+          <h1>Categorias do portal</h1>
+        </div>
+      </div>
+      <div class="card-grid">
+        {% for category in category_groups %}
+          <article class="info-panel">
+            <h3>{{ category.title }}</h3>
+            <p>{{ category.description }}</p>
+            <div class="metric-row">
+              <span>{{ category.live_count }} live</span>
+              <span>{{ category.planned_count }} planejado</span>
+            </div>
+            {% if category.games %}
+              <ul class="plain-list compact-list">
+                {% for game in category.games %}
+                  <li>{{ game.title }}{% if game.status != "live" %} (em breve){% endif %}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}

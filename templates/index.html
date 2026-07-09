@@ -1,38 +1,103 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0f766e">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="alankon Gaming">
-  <meta name="mobile-web-app-capable" content="yes">
-  <title>alankon Gaming | Menu de Jogos</title>
-  <link rel="manifest" href="{{ url_for('manifest_file') }}">
-  <link rel="icon" href="{{ url_for('static', filename='icons/alankon-gaming-icon.svg') }}" type="image/svg+xml">
-  <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
-  <script src="{{ url_for('static', filename='platform.js') }}" defer></script>
-</head>
-<body>
-  <main class="menu-shell">
-    <section class="hero">
-      <p class="tag">alankon gaming</p>
-      <h1>Menu de Jogos</h1>
-      <p class="subtitle">Escolha o modo e comece agora no navegador.</p>
+{% extends "base.html" %}
+{% block title %}alankon Gaming | Plataforma{% endblock %}
+{% block content %}
+  <main class="platform-stack">
+    <section class="hero-card hero-grid">
+      <div>
+        <p class="eyebrow">fase 1 da plataforma</p>
+        <h1>Seu portal proprio de jogos web esta saindo do modo repositorio.</h1>
+        <p class="lede">A casa do `Git Grid 2048`, do `Aprender Teclas` e dos proximos jogos de `Infantil`, `Puzzle`, `Git Games` e `AI Games`.</p>
+        <div class="hero-actions">
+          <a class="cta-primary" href="{{ url_for('pagina_jogos') }}">Explorar jogos</a>
+          <a class="cta-secondary" href="{{ url_for('pagina_atualizacoes') }}">Ver atualizacoes</a>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <article class="stat-card">
+          <span class="stat-label">Jogos live</span>
+          <strong>{{ platform_metrics.live_games }}</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Players anonimos</span>
+          <strong>{{ platform_metrics.player_count }}</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Partidas registradas</span>
+          <strong>{{ platform_metrics.total_plays }}</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Conquistas liberadas</span>
+          <strong>{{ platform_metrics.achievement_unlocks }}</strong>
+        </article>
+      </div>
     </section>
 
-    <section class="games-grid">
-      <article class="game-card">
-        <h2>1. Git Grid 2048</h2>
-        <p>Seu jogo 2048 customizado com tema Git e animacoes.</p>
-        <a id="play-2048" class="play-btn" href="{{ url_for('jogo_2048') }}">Jogar 2048</a>
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">jogos em destaque</p>
+          <h2>Biblioteca viva do alankon Gaming</h2>
+        </div>
+        <a class="text-link" href="{{ url_for('pagina_jogos') }}">Abrir biblioteca completa</a>
+      </div>
+      <div class="card-grid">
+        {% for game in featured_games %}
+          <article class="game-panel">
+            <span class="tag-chip" style="--accent: {{ game.accent }}">{{ game.category }}</span>
+            <h3>{{ game.title }}</h3>
+            <p>{{ game.description }}</p>
+            <div class="panel-actions">
+              <a class="cta-primary compact" href="{{ game.route }}">{{ "Jogar agora" if game.status == "live" else "Em breve" }}</a>
+              <span class="meta-note">{{ game.tagline }}</span>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="section-block split-grid">
+      <article class="info-panel">
+        <p class="eyebrow">estrutura da plataforma</p>
+        <h2>Mapa da fase atual</h2>
+        <ul class="plain-list">
+          <li>Home com identidade de portal</li>
+          <li>Biblioteca por categorias</li>
+          <li>Perfil anonimo por navegador</li>
+          <li>Ranking por score e atividade</li>
+          <li>Conquistas persistidas em SQLite</li>
+          <li>Base pronta para analytics e mais jogos</li>
+        </ul>
       </article>
-      <article class="game-card">
-        <h2>2. Aprender Teclas</h2>
-        <p>Aperte letras e numeros para ouvir e fixar no teclado.</p>
-        <a id="play-keys" class="play-btn" href="{{ url_for('jogo_aprender_teclas') }}">Abrir Jogo Novo</a>
+      <article class="info-panel">
+        <p class="eyebrow">proximos jogos</p>
+        <h2>Slots ja reservados</h2>
+        <div class="mini-grid">
+          {% for category in category_groups %}
+            <div class="mini-chip">
+              <strong>{{ category.title }}</strong>
+              <span>{{ category.live_count }} live / {{ category.planned_count }} planejado</span>
+            </div>
+          {% endfor %}
+        </div>
       </article>
     </section>
+
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">feed do estudio</p>
+          <h2>Atualizacoes recentes</h2>
+        </div>
+      </div>
+      <div class="timeline">
+        {% for item in update_log %}
+          <article class="timeline-item">
+            <span class="timeline-date">{{ item.date }}</span>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.summary }}</p>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
   </main>
-</body>
-</html>
+{% endblock %}

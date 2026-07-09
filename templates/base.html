@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="alankon Gaming">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>{% block title %}alankon Gaming{% endblock %}</title>
+  <link rel="manifest" href="{{ url_for('manifest_file') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/alankon-gaming-icon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='portal.css', v='platform-v1') }}">
+  <script src="{{ url_for('static', filename='platform.js') }}" defer></script>
+</head>
+<body class="platform-body" data-player-id="{{ player_summary.id }}">
+  <div class="platform-shell">
+    <header class="topbar">
+      <a class="brand-mark" href="{{ url_for('pagina_inicial') }}">
+        <span class="brand-kicker">alankon</span>
+        <strong>Gaming</strong>
+      </a>
+      <nav class="main-nav" aria-label="Navegacao principal">
+        {% for link in nav_links %}
+          <a class="nav-link{% if active_page == link.endpoint %} active{% endif %}" href="{{ url_for(link.endpoint) }}">{{ link.label }}</a>
+        {% endfor %}
+      </nav>
+      <a class="player-pill" href="{{ url_for('pagina_perfil') }}">{{ player_summary.badge }}</a>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <footer class="platform-footer">
+      <div>
+        <strong>alankon Gaming</strong>
+        <p>Portal autoral de jogos web, com base para estatisticas, conquistas e IA criativa.</p>
+      </div>
+      <div class="footer-links">
+        <a href="{{ url_for('pagina_jogos') }}">Jogos</a>
+        <a href="{{ url_for('pagina_ranking') }}">Ranking</a>
+        <a href="{{ url_for('pagina_conquistas') }}">Conquistas</a>
+        <a href="{{ url_for('pagina_atualizacoes') }}">Atualizacoes</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

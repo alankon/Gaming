@@ -17,6 +17,47 @@
     return new URL(`${repoBase}service-worker.js`, window.location.origin).toString();
   }
 
+  function apiEnabled() {
+    return window.location.protocol !== "file:" && !window.location.hostname.endsWith("github.io");
+  }
+
+  function postJson(path, payload, useBeacon) {
+    if (!apiEnabled()) return Promise.resolve(false);
+    const url = new URL(path, window.location.origin).toString();
+    if (useBeacon && navigator.sendBeacon) {
+      try {
+        const sent = navigator.sendBeacon(url, new Blob([JSON.stringify(payload)], { type: "application/json" }));
+        return Promise.resolve(sent);
+      } catch {}
+    }
+    return fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => response.ok)
+      .catch(() => false);
+  }
+
+  window.alankonGaming = {
+    playerId() {
+      return document.body.dataset.playerId || "";
+    },
+    trackGameStart(gameSlug) {
+      return postJson("/api/track/start", { game_slug: gameSlug }, false);
+    },
+    trackGameProgress(gameSlug, payload) {
+      return postJson("/api/track/progress", { game_slug: gameSlug, ...(payload || {}) }, false);
+    },
+    trackGameProgressBeacon(gameSlug, payload) {
+      return postJson("/api/track/progress", { game_slug: gameSlug, ...(payload || {}) }, true);
+    },
+    setFavoriteGame(gameSlug) {
+      return postJson("/api/player/favorite", { game_slug: gameSlug }, false);
+    },
+  };
+
   window.addEventListener("resize", setViewportHeightVar, { passive: true });
   window.addEventListener("orientationchange", setViewportHeightVar, { passive: true });
   setViewportHeightVar();

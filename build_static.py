@@ -1,19 +1,28 @@
 import os
 import shutil
+
 from app import app
 
 # Configure app for testing
-app.config['SERVER_NAME'] = 'localhost'
-app.config['APPLICATION_ROOT'] = '/'
-app.config['PREFERRED_URL_SCHEME'] = 'http'
+app.config["SERVER_NAME"] = "localhost"
+app.config["APPLICATION_ROOT"] = "/"
+app.config["PREFERRED_URL_SCHEME"] = "http"
+app.config["STATIC_EXPORT"] = True
 
 client = app.test_client()
 PRESERVED_DOCS = ("gaming_sync_report.md", "SECURITY_AUDIT.md")
 
 routes = {
     "/": "index.html",
+    "/jogos": "jogos.html",
+    "/categorias": "categorias.html",
+    "/perfil": "perfil.html",
+    "/ranking": "ranking.html",
+    "/conquistas": "conquistas.html",
+    "/sobre": "sobre.html",
+    "/atualizacoes": "atualizacoes.html",
     "/2048": "2048.html",
-    "/aprender-teclas": "aprender-teclas.html"
+    "/aprender-teclas": "aprender-teclas.html",
 }
 
 # Ensure docs directory exists
@@ -41,23 +50,36 @@ for filename, content in preserved_files.items():
     print(f"Preserved docs/{filename}")
 
 # Render pages and save to docs
+REPLACEMENTS = [
+    ('href="/static/', 'href="static/'),
+    ('src="/static/', 'src="static/'),
+    ('href="/manifest.webmanifest"', 'href="manifest.webmanifest"'),
+    ('src="/manifest.webmanifest"', 'src="manifest.webmanifest"'),
+    ('href="/service-worker.js"', 'href="service-worker.js"'),
+    ('src="/service-worker.js"', 'src="service-worker.js"'),
+    ('href="/"', 'href="index.html"'),
+    ('href="/jogos"', 'href="jogos.html"'),
+    ('href="/categorias"', 'href="categorias.html"'),
+    ('href="/perfil"', 'href="perfil.html"'),
+    ('href="/ranking"', 'href="ranking.html"'),
+    ('href="/conquistas"', 'href="conquistas.html"'),
+    ('href="/sobre"', 'href="sobre.html"'),
+    ('href="/atualizacoes"', 'href="atualizacoes.html"'),
+    ('href="/2048"', 'href="2048.html"'),
+    ('href="/aprender-teclas"', 'href="aprender-teclas.html"'),
+]
+
 with app.app_context():
     for route, filename in routes.items():
         response = client.get(route)
         if response.status_code != 200:
             print(f"Error rendering {route}: Status code {response.status_code}")
             continue
-            
-        html = response.data.decode('utf-8')
-        
-        # Replace absolute slash links with relative links to work perfectly on GitHub Pages
-        html = html.replace('href="/static/', 'href="static/')
-        html = html.replace('src="/static/', 'src="static/')
-        html = html.replace('href="/manifest.webmanifest"', 'href="manifest.webmanifest"')
-        html = html.replace('href="/2048"', 'href="2048.html"')
-        html = html.replace('href="/aprender-teclas"', 'href="aprender-teclas.html"')
-        html = html.replace('href="/"', 'href="index.html"')
-        
+
+        html = response.data.decode("utf-8")
+        for old, new in REPLACEMENTS:
+            html = html.replace(old, new)
+
         dest_path = os.path.join("docs", filename)
         with open(dest_path, "w", encoding="utf-8") as f:
             f.write(html)

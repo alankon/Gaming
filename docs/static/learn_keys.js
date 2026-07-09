@@ -49,6 +49,12 @@
   let activePublicAudio = null;
   let activePublicStopTimer = null;
   let soundTicket = 0;
+  let sessionStarted = false;
+  let lastReportedPressCount = 0;
+
+  function analytics() {
+    return window.alankonGaming || null;
+  }
   const FUN_MAP = {
     A: { emoji: "🐝", label: "A de abelha", sound: "buzz" },
     B: { emoji: "👶", label: "B de bebe", sound: "baby" },
@@ -697,6 +703,23 @@
     flashButton(char);
     replayAnimation();
     playCuteSound(fun.sound);
+    reportKeyProgress();
+  }
+
+  function reportKeyProgress(force = false) {
+    if (!analytics()) return;
+    if (!sessionStarted) {
+      analytics().trackGameStart("learn-keys");
+      sessionStarted = true;
+    }
+    if (!force && state.pressCount !== 1 && state.pressCount - lastReportedPressCount < 5) {
+      return;
+    }
+    lastReportedPressCount = state.pressCount;
+    analytics().trackGameProgress("learn-keys", {
+      key_presses: state.pressCount,
+      state: "active"
+    });
   }
 
   function normalizeKey(key) {
@@ -838,4 +861,11 @@
 
   buildTouchKeyboard();
   window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("beforeunload", () => {
+    if (!analytics() || !sessionStarted) return;
+    analytics().trackGameProgressBeacon("learn-keys", {
+      key_presses: state.pressCount,
+      state: "active"
+    });
+  });
 })();

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}alankon Gaming | Conquistas{% endblock %}
+{% block content %}
+  <main class="platform-stack">
+    <section class="section-block">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">retenção e progresso</p>
+          <h1>Conquistas do player</h1>
+        </div>
+        <p class="lede compact">{{ player_summary.achievement_count }} liberadas ate agora.</p>
+      </div>
+      <div class="card-grid">
+        {% for achievement in achievement_board %}
+          <article class="achievement-card{% if achievement.unlocked %} unlocked{% endif %}">
+            <span class="tag-chip">{{ achievement.icon }}</span>
+            <h3>{{ achievement.title }}</h3>
+            <p>{{ achievement.description }}</p>
+            <div class="metric-row">
+              <span>{{ achievement.points }} pts</span>
+              <span>{% if achievement.unlocked %}Liberada{% else %}Bloqueada{% endif %}</span>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+{% endblock %}

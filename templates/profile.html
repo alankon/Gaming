@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}alankon Gaming | Perfil{% endblock %}
+{% block content %}
+  <main class="platform-stack">
+    <section class="hero-card profile-hero">
+      <div>
+        <p class="eyebrow">conta anonima local</p>
+        <h1>{{ player_summary.badge }}</h1>
+        <p class="lede compact">Cada navegador recebe um ID proprio para salvar recordes, conquistas e atividade sem exigir login agora.</p>
+      </div>
+      <div class="stat-grid">
+        <article class="stat-card">
+          <span class="stat-label">Partidas</span>
+          <strong>{{ player_summary.total_game_plays }}</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Jogos tocados</span>
+          <strong>{{ player_summary.games_played_count }}</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Conquistas</span>
+          <strong>{{ player_summary.achievement_count }}</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Favorito</span>
+          <strong>{{ player_summary.favorite_game_title }}</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-block split-grid">
+      <article class="info-panel">
+        <h2>Identidade do player</h2>
+        <div class="detail-grid">
+          <div><span>ID</span><strong>{{ player_summary.id }}</strong></div>
+          <div><span>Criado em</span><strong>{{ player_summary.created_at }}</strong></div>
+          <div><span>Ultima atividade</span><strong>{{ player_summary.last_seen_at }}</strong></div>
+          <div><span>Melhor 2048</span><strong>{{ player_summary.best_score_2048 }}</strong></div>
+          <div><span>Melhor Aprender Teclas</span><strong>{{ player_summary.best_key_presses }}</strong></div>
+        </div>
+      </article>
+      <article class="info-panel">
+        <h2>Resumo por jogo</h2>
+        <div class="summary-list">
+          {% for row in player_summary.game_rows %}
+            <div class="summary-item">
+              <strong>{{ row.title }}</strong>
+              <span>{{ row.plays }} partidas</span>
+              <span>Best score: {{ row.best_score }}</span>
+              <span>Best teclas: {{ row.best_key_presses }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+  </main>
+{% endblock %}
